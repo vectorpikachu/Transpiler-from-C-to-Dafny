@@ -3,8 +3,10 @@ mod converter;
 mod dafny_ast;
 mod context;
 mod printer;
+mod preprocess;
 
 use context::Context;
+use preprocess::extract_assertion;
 use tree_sitter::Parser;
 use tree_sitter_c::LANGUAGE;
 use std::fs;
@@ -43,6 +45,7 @@ fn main() -> Result<()> {
     let output_file: &String = matches.get_one("output").expect("output file not specified");
 
     let c_code = fs::read_to_string(input_file).expect("Error reading input file");
+    let c_code = extract_assertion(&c_code);
 
     let mut parser = Parser::new();
     parser.set_language(&LANGUAGE.into()).expect("Error loading C grammar");

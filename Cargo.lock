@@ -7,6 +7,7 @@ name = "CParser"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "regex",
  "tree-sitter",
  "tree-sitter-c",
 ]
