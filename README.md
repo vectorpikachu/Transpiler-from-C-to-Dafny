@@ -1,4 +1,4 @@
-# C to Dafny
+# A Transpiler from C to Dafny
 
 使用 tree-sitter 和 tree-sitter-c 构建的 C to Dafny 转换器。
 
