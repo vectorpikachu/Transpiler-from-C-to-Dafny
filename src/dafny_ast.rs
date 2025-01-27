@@ -95,7 +95,7 @@ pub struct Param {
     pub type_: Type,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Type {
     Int,
     Bool,
@@ -113,6 +113,9 @@ pub enum Type {
 
 // TODO: get the max type of two types
 pub fn max_ty(t1: Type, t2: Type) -> Type {
+    if t1 == t2 {
+        return t1;
+    }
     return Type::Int;
 }
 
