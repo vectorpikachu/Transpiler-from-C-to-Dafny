@@ -18,11 +18,14 @@ void main(){
    n = unknown_int();
    assume( n>= 0 );
 
+
    i = 0; 
    a = 0; 
    b = 0;
 
    t = 1, t0 = 1;
+
+   int z = f(t);
 
    while ( i < n ) i++;
 
@@ -39,6 +42,10 @@ void main(){
       i = i+1;
    }
 
+   int c;
+   c = -a;
+   c++;
+
    if ( a+b != 3*n)
       goto ERROR;
 
@@ -48,7 +55,7 @@ return;
   assert(false);
 }
 }
-} (1:1 - 50:2)
+} (1:1 - 57:2)
   comment: // Source: data/benchmarks/LinearArbitrary-SeaHorn/VeriMAP/MAP-forward_VeriMAP_true.c (1:1 - 1:87)
   preproc_include: #include <stdlib.h>
  (2:1 - 3:1)
@@ -113,11 +120,14 @@ return;
    n = unknown_int();
    assume( n>= 0 );
 
+
    i = 0; 
    a = 0; 
    b = 0;
 
    t = 1, t0 = 1;
+
+   int z = f(t);
 
    while ( i < n ) i++;
 
@@ -134,6 +144,10 @@ return;
       i = i+1;
    }
 
+   int c;
+   c = -a;
+   c++;
+
    if ( a+b != 3*n)
       goto ERROR;
 
@@ -143,7 +157,7 @@ return;
   assert(false);
 }
 }
-} (14:1 - 50:2)
+} (14:1 - 57:2)
     primitive_type: void (14:1 - 14:5)
     function_declarator: main() (14:6 - 14:12)
       identifier: main (14:6 - 14:10)
@@ -156,11 +170,14 @@ return;
    n = unknown_int();
    assume( n>= 0 );
 
+
    i = 0; 
    a = 0; 
    b = 0;
 
    t = 1, t0 = 1;
+
+   int z = f(t);
 
    while ( i < n ) i++;
 
@@ -177,6 +194,10 @@ return;
       i = i+1;
    }
 
+   int c;
+   c = -a;
+   c++;
+
    if ( a+b != 3*n)
       goto ERROR;
 
@@ -186,7 +207,7 @@ return;
   assert(false);
 }
 }
-} (14:12 - 50:2)
+} (14:12 - 57:2)
       {: { (14:12 - 14:13)
       declaration: int i, n, a, b; (16:4 - 16:19)
         primitive_type: int (16:4 - 16:7)
@@ -219,50 +240,62 @@ return;
               number_literal: 0 (18:16 - 18:17)
             ): ) (18:18 - 18:19)
         ;: ; (18:19 - 18:20)
-      expression_statement: i = 0; (20:4 - 20:10)
-        assignment_expression: i = 0 (20:4 - 20:9)
-          identifier: i (20:4 - 20:5)
-          =: = (20:6 - 20:7)
-          number_literal: 0 (20:8 - 20:9)
-        ;: ; (20:9 - 20:10)
-      expression_statement: a = 0; (21:4 - 21:10)
-        assignment_expression: a = 0 (21:4 - 21:9)
-          identifier: a (21:4 - 21:5)
+      expression_statement: i = 0; (21:4 - 21:10)
+        assignment_expression: i = 0 (21:4 - 21:9)
+          identifier: i (21:4 - 21:5)
           =: = (21:6 - 21:7)
           number_literal: 0 (21:8 - 21:9)
         ;: ; (21:9 - 21:10)
-      expression_statement: b = 0; (22:4 - 22:10)
-        assignment_expression: b = 0 (22:4 - 22:9)
-          identifier: b (22:4 - 22:5)
+      expression_statement: a = 0; (22:4 - 22:10)
+        assignment_expression: a = 0 (22:4 - 22:9)
+          identifier: a (22:4 - 22:5)
           =: = (22:6 - 22:7)
           number_literal: 0 (22:8 - 22:9)
         ;: ; (22:9 - 22:10)
-      expression_statement: t = 1, t0 = 1; (24:4 - 24:18)
-        comma_expression: t = 1, t0 = 1 (24:4 - 24:17)
-          assignment_expression: t = 1 (24:4 - 24:9)
-            identifier: t (24:4 - 24:5)
-            =: = (24:6 - 24:7)
-            number_literal: 1 (24:8 - 24:9)
-          ,: , (24:9 - 24:10)
-          assignment_expression: t0 = 1 (24:11 - 24:17)
-            identifier: t0 (24:11 - 24:13)
-            =: = (24:14 - 24:15)
-            number_literal: 1 (24:16 - 24:17)
-        ;: ; (24:17 - 24:18)
-      while_statement: while ( i < n ) i++; (26:4 - 26:24)
-        while: while (26:4 - 26:9)
-        parenthesized_expression: ( i < n ) (26:10 - 26:19)
-          (: ( (26:10 - 26:11)
-          binary_expression: i < n (26:12 - 26:17)
-            identifier: i (26:12 - 26:13)
-            <: < (26:14 - 26:15)
-            identifier: n (26:16 - 26:17)
-          ): ) (26:18 - 26:19)
-        expression_statement: i++; (26:20 - 26:24)
-          update_expression: i++ (26:20 - 26:23)
-            identifier: i (26:20 - 26:21)
-            ++: ++ (26:21 - 26:23)
-          ;: ; (26:23 - 26:24)
+      expression_statement: b = 0; (23:4 - 23:10)
+        assignment_expression: b = 0 (23:4 - 23:9)
+          identifier: b (23:4 - 23:5)
+          =: = (23:6 - 23:7)
+          number_literal: 0 (23:8 - 23:9)
+        ;: ; (23:9 - 23:10)
+      expression_statement: t = 1, t0 = 1; (25:4 - 25:18)
+        comma_expression: t = 1, t0 = 1 (25:4 - 25:17)
+          assignment_expression: t = 1 (25:4 - 25:9)
+            identifier: t (25:4 - 25:5)
+            =: = (25:6 - 25:7)
+            number_literal: 1 (25:8 - 25:9)
+          ,: , (25:9 - 25:10)
+          assignment_expression: t0 = 1 (25:11 - 25:17)
+            identifier: t0 (25:11 - 25:13)
+            =: = (25:14 - 25:15)
+            number_literal: 1 (25:16 - 25:17)
+        ;: ; (25:17 - 25:18)
+      declaration: int z = f(t); (27:4 - 27:17)
+        primitive_type: int (27:4 - 27:7)
+        init_declarator: z = f(t) (27:8 - 27:16)
+          identifier: z (27:8 - 27:9)
+          =: = (27:10 - 27:11)
+          call_expression: f(t) (27:12 - 27:16)
+            identifier: f (27:12 - 27:13)
+            argument_list: (t) (27:13 - 27:16)
+              (: ( (27:13 - 27:14)
+              identifier: t (27:14 - 27:15)
+              ): ) (27:15 - 27:16)
+        ;: ; (27:16 - 27:17)
+      while_statement: while ( i < n ) i++; (29:4 - 29:24)
+        while: while (29:4 - 29:9)
+        parenthesized_expression: ( i < n ) (29:10 - 29:19)
+          (: ( (29:10 - 29:11)
+          binary_expression: i < n (29:12 - 29:17)
+            identifier: i (29:12 - 29:13)
+            <: < (29:14 - 29:15)
+            identifier: n (29:16 - 29:17)
+          ): ) (29:18 - 29:19)
+        expression_statement: i++; (29:20 - 29:24)
+          update_expression: i++ (29:20 - 29:23)
+            identifier: i (29:20 - 29:21)
+            ++: ++ (29:21 - 29:23)
+          ;: ; (29:23 - 29:24)
       while_statement: while( i < n ){
       if(unknown_int()) {
          a = a+1;
@@ -274,15 +307,15 @@ return;
          continue;
       }
       i = i+1;
-   } (28:4 - 39:5)
-        while: while (28:4 - 28:9)
-        parenthesized_expression: ( i < n ) (28:9 - 28:18)
-          (: ( (28:9 - 28:10)
-          binary_expression: i < n (28:11 - 28:16)
-            identifier: i (28:11 - 28:12)
-            <: < (28:13 - 28:14)
-            identifier: n (28:15 - 28:16)
-          ): ) (28:17 - 28:18)
+   } (31:4 - 42:5)
+        while: while (31:4 - 31:9)
+        parenthesized_expression: ( i < n ) (31:9 - 31:18)
+          (: ( (31:9 - 31:10)
+          binary_expression: i < n (31:11 - 31:16)
+            identifier: i (31:11 - 31:12)
+            <: < (31:13 - 31:14)
+            identifier: n (31:15 - 31:16)
+          ): ) (31:17 - 31:18)
         compound_statement: {
       if(unknown_int()) {
          a = a+1;
@@ -294,8 +327,8 @@ return;
          continue;
       }
       i = i+1;
-   } (28:18 - 39:5)
-          {: { (28:18 - 28:19)
+   } (31:18 - 42:5)
+          {: { (31:18 - 31:19)
           if_statement: if(unknown_int()) {
          a = a+1;
          b = b+2;
@@ -304,135 +337,152 @@ return;
          a = a+2;
          b = b+1;
          continue;
-      } (29:7 - 37:8)
-            if: if (29:7 - 29:9)
-            parenthesized_expression: (unknown_int()) (29:9 - 29:24)
-              (: ( (29:9 - 29:10)
-              call_expression: unknown_int() (29:10 - 29:23)
-                identifier: unknown_int (29:10 - 29:21)
-                argument_list: () (29:21 - 29:23)
-                  (: ( (29:21 - 29:22)
-                  ): ) (29:22 - 29:23)
-              ): ) (29:23 - 29:24)
+      } (32:7 - 40:8)
+            if: if (32:7 - 32:9)
+            parenthesized_expression: (unknown_int()) (32:9 - 32:24)
+              (: ( (32:9 - 32:10)
+              call_expression: unknown_int() (32:10 - 32:23)
+                identifier: unknown_int (32:10 - 32:21)
+                argument_list: () (32:21 - 32:23)
+                  (: ( (32:21 - 32:22)
+                  ): ) (32:22 - 32:23)
+              ): ) (32:23 - 32:24)
             compound_statement: {
          a = a+1;
          b = b+2;
          break;
-      } (29:25 - 33:8)
-              {: { (29:25 - 29:26)
-              expression_statement: a = a+1; (30:10 - 30:18)
-                assignment_expression: a = a+1 (30:10 - 30:17)
-                  identifier: a (30:10 - 30:11)
-                  =: = (30:12 - 30:13)
-                  binary_expression: a+1 (30:14 - 30:17)
-                    identifier: a (30:14 - 30:15)
-                    +: + (30:15 - 30:16)
-                    number_literal: 1 (30:16 - 30:17)
-                ;: ; (30:17 - 30:18)
-              expression_statement: b = b+2; (31:10 - 31:18)
-                assignment_expression: b = b+2 (31:10 - 31:17)
-                  identifier: b (31:10 - 31:11)
-                  =: = (31:12 - 31:13)
-                  binary_expression: b+2 (31:14 - 31:17)
-                    identifier: b (31:14 - 31:15)
-                    +: + (31:15 - 31:16)
-                    number_literal: 2 (31:16 - 31:17)
-                ;: ; (31:17 - 31:18)
-              break_statement: break; (32:10 - 32:16)
-                break: break (32:10 - 32:15)
-                ;: ; (32:15 - 32:16)
-              }: } (33:7 - 33:8)
+      } (32:25 - 36:8)
+              {: { (32:25 - 32:26)
+              expression_statement: a = a+1; (33:10 - 33:18)
+                assignment_expression: a = a+1 (33:10 - 33:17)
+                  identifier: a (33:10 - 33:11)
+                  =: = (33:12 - 33:13)
+                  binary_expression: a+1 (33:14 - 33:17)
+                    identifier: a (33:14 - 33:15)
+                    +: + (33:15 - 33:16)
+                    number_literal: 1 (33:16 - 33:17)
+                ;: ; (33:17 - 33:18)
+              expression_statement: b = b+2; (34:10 - 34:18)
+                assignment_expression: b = b+2 (34:10 - 34:17)
+                  identifier: b (34:10 - 34:11)
+                  =: = (34:12 - 34:13)
+                  binary_expression: b+2 (34:14 - 34:17)
+                    identifier: b (34:14 - 34:15)
+                    +: + (34:15 - 34:16)
+                    number_literal: 2 (34:16 - 34:17)
+                ;: ; (34:17 - 34:18)
+              break_statement: break; (35:10 - 35:16)
+                break: break (35:10 - 35:15)
+                ;: ; (35:15 - 35:16)
+              }: } (36:7 - 36:8)
             else_clause: else {
          a = a+2;
          b = b+1;
          continue;
-      } (33:9 - 37:8)
-              else: else (33:9 - 33:13)
+      } (36:9 - 40:8)
+              else: else (36:9 - 36:13)
               compound_statement: {
          a = a+2;
          b = b+1;
          continue;
-      } (33:14 - 37:8)
-                {: { (33:14 - 33:15)
-                expression_statement: a = a+2; (34:10 - 34:18)
-                  assignment_expression: a = a+2 (34:10 - 34:17)
-                    identifier: a (34:10 - 34:11)
-                    =: = (34:12 - 34:13)
-                    binary_expression: a+2 (34:14 - 34:17)
-                      identifier: a (34:14 - 34:15)
-                      +: + (34:15 - 34:16)
-                      number_literal: 2 (34:16 - 34:17)
-                  ;: ; (34:17 - 34:18)
-                expression_statement: b = b+1; (35:10 - 35:18)
-                  assignment_expression: b = b+1 (35:10 - 35:17)
-                    identifier: b (35:10 - 35:11)
-                    =: = (35:12 - 35:13)
-                    binary_expression: b+1 (35:14 - 35:17)
-                      identifier: b (35:14 - 35:15)
-                      +: + (35:15 - 35:16)
-                      number_literal: 1 (35:16 - 35:17)
-                  ;: ; (35:17 - 35:18)
-                continue_statement: continue; (36:10 - 36:19)
-                  continue: continue (36:10 - 36:18)
-                  ;: ; (36:18 - 36:19)
-                }: } (37:7 - 37:8)
-          expression_statement: i = i+1; (38:7 - 38:15)
-            assignment_expression: i = i+1 (38:7 - 38:14)
-              identifier: i (38:7 - 38:8)
-              =: = (38:9 - 38:10)
-              binary_expression: i+1 (38:11 - 38:14)
-                identifier: i (38:11 - 38:12)
-                +: + (38:12 - 38:13)
-                number_literal: 1 (38:13 - 38:14)
-            ;: ; (38:14 - 38:15)
-          }: } (39:4 - 39:5)
+      } (36:14 - 40:8)
+                {: { (36:14 - 36:15)
+                expression_statement: a = a+2; (37:10 - 37:18)
+                  assignment_expression: a = a+2 (37:10 - 37:17)
+                    identifier: a (37:10 - 37:11)
+                    =: = (37:12 - 37:13)
+                    binary_expression: a+2 (37:14 - 37:17)
+                      identifier: a (37:14 - 37:15)
+                      +: + (37:15 - 37:16)
+                      number_literal: 2 (37:16 - 37:17)
+                  ;: ; (37:17 - 37:18)
+                expression_statement: b = b+1; (38:10 - 38:18)
+                  assignment_expression: b = b+1 (38:10 - 38:17)
+                    identifier: b (38:10 - 38:11)
+                    =: = (38:12 - 38:13)
+                    binary_expression: b+1 (38:14 - 38:17)
+                      identifier: b (38:14 - 38:15)
+                      +: + (38:15 - 38:16)
+                      number_literal: 1 (38:16 - 38:17)
+                  ;: ; (38:17 - 38:18)
+                continue_statement: continue; (39:10 - 39:19)
+                  continue: continue (39:10 - 39:18)
+                  ;: ; (39:18 - 39:19)
+                }: } (40:7 - 40:8)
+          expression_statement: i = i+1; (41:7 - 41:15)
+            assignment_expression: i = i+1 (41:7 - 41:14)
+              identifier: i (41:7 - 41:8)
+              =: = (41:9 - 41:10)
+              binary_expression: i+1 (41:11 - 41:14)
+                identifier: i (41:11 - 41:12)
+                +: + (41:12 - 41:13)
+                number_literal: 1 (41:13 - 41:14)
+            ;: ; (41:14 - 41:15)
+          }: } (42:4 - 42:5)
+      declaration: int c; (44:4 - 44:10)
+        primitive_type: int (44:4 - 44:7)
+        identifier: c (44:8 - 44:9)
+        ;: ; (44:9 - 44:10)
+      expression_statement: c = -a; (45:4 - 45:11)
+        assignment_expression: c = -a (45:4 - 45:10)
+          identifier: c (45:4 - 45:5)
+          =: = (45:6 - 45:7)
+          unary_expression: -a (45:8 - 45:10)
+            -: - (45:8 - 45:9)
+            identifier: a (45:9 - 45:10)
+        ;: ; (45:10 - 45:11)
+      expression_statement: c++; (46:4 - 46:8)
+        update_expression: c++ (46:4 - 46:7)
+          identifier: c (46:4 - 46:5)
+          ++: ++ (46:5 - 46:7)
+        ;: ; (46:7 - 46:8)
       if_statement: if ( a+b != 3*n)
-      goto ERROR; (41:4 - 42:18)
-        if: if (41:4 - 41:6)
-        parenthesized_expression: ( a+b != 3*n) (41:7 - 41:20)
-          (: ( (41:7 - 41:8)
-          binary_expression: a+b != 3*n (41:9 - 41:19)
-            binary_expression: a+b (41:9 - 41:12)
-              identifier: a (41:9 - 41:10)
-              +: + (41:10 - 41:11)
-              identifier: b (41:11 - 41:12)
-            !=: != (41:13 - 41:15)
-            binary_expression: 3*n (41:16 - 41:19)
-              number_literal: 3 (41:16 - 41:17)
-              *: * (41:17 - 41:18)
-              identifier: n (41:18 - 41:19)
-          ): ) (41:19 - 41:20)
-        goto_statement: goto ERROR; (42:7 - 42:18)
-          goto: goto (42:7 - 42:11)
-          statement_identifier: ERROR (42:12 - 42:17)
-          ;: ; (42:17 - 42:18)
-      return_statement: return; (44:1 - 44:8)
-        return: return (44:1 - 44:7)
-        ;: ; (44:7 - 44:8)
+      goto ERROR; (48:4 - 49:18)
+        if: if (48:4 - 48:6)
+        parenthesized_expression: ( a+b != 3*n) (48:7 - 48:20)
+          (: ( (48:7 - 48:8)
+          binary_expression: a+b != 3*n (48:9 - 48:19)
+            binary_expression: a+b (48:9 - 48:12)
+              identifier: a (48:9 - 48:10)
+              +: + (48:10 - 48:11)
+              identifier: b (48:11 - 48:12)
+            !=: != (48:13 - 48:15)
+            binary_expression: 3*n (48:16 - 48:19)
+              number_literal: 3 (48:16 - 48:17)
+              *: * (48:17 - 48:18)
+              identifier: n (48:18 - 48:19)
+          ): ) (48:19 - 48:20)
+        goto_statement: goto ERROR; (49:7 - 49:18)
+          goto: goto (49:7 - 49:11)
+          statement_identifier: ERROR (49:12 - 49:17)
+          ;: ; (49:17 - 49:18)
+      return_statement: return; (51:1 - 51:8)
+        return: return (51:1 - 51:7)
+        ;: ; (51:7 - 51:8)
       compound_statement: { ERROR: {; 
   assert(false);
 }
-} (46:1 - 49:2)
-        {: { (46:1 - 46:2)
+} (53:1 - 56:2)
+        {: { (53:1 - 53:2)
         labeled_statement: ERROR: {; 
   assert(false);
-} (46:3 - 48:2)
-          statement_identifier: ERROR (46:3 - 46:8)
-          :: : (46:8 - 46:9)
+} (53:3 - 55:2)
+          statement_identifier: ERROR (53:3 - 53:8)
+          :: : (53:8 - 53:9)
           compound_statement: {; 
   assert(false);
-} (46:10 - 48:2)
-            {: { (46:10 - 46:11)
-            expression_statement: ; (46:11 - 46:12)
-              ;: ; (46:11 - 46:12)
-            expression_statement: assert(false); (47:3 - 47:17)
-              call_expression: assert(false) (47:3 - 47:16)
-                identifier: assert (47:3 - 47:9)
-                argument_list: (false) (47:9 - 47:16)
-                  (: ( (47:9 - 47:10)
-                  false: false (47:10 - 47:15)
-                  ): ) (47:15 - 47:16)
-              ;: ; (47:16 - 47:17)
-            }: } (48:1 - 48:2)
-        }: } (49:1 - 49:2)
-      }: } (50:1 - 50:2)
+} (53:10 - 55:2)
+            {: { (53:10 - 53:11)
+            expression_statement: ; (53:11 - 53:12)
+              ;: ; (53:11 - 53:12)
+            expression_statement: assert(false); (54:3 - 54:17)
+              call_expression: assert(false) (54:3 - 54:16)
+                identifier: assert (54:3 - 54:9)
+                argument_list: (false) (54:9 - 54:16)
+                  (: ( (54:9 - 54:10)
+                  false: false (54:10 - 54:15)
+                  ): ) (54:15 - 54:16)
+              ;: ; (54:16 - 54:17)
+            }: } (55:1 - 55:2)
+        }: } (56:1 - 56:2)
+      }: } (57:1 - 57:2)

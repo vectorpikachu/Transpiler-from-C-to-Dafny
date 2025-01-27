@@ -6,7 +6,7 @@ use crate::dafny_ast::*;
 pub struct Context {
     tmp_var_gen: TempVarGenerator,
     current_method: Option<String>,
-    scope_stack: Vec<HashMap<String, Type>>,
+    scope_stack: Vec<HashMap<String, Type>>, // include all the methods
 }
 
 impl Context {
@@ -51,6 +51,7 @@ impl Context {
             scope.insert(name, ty);
         }
     }
+
 
     pub fn lookup_var(&self, name: &str) -> Option<&Type> {
         for scope in self.scope_stack.iter().rev() {

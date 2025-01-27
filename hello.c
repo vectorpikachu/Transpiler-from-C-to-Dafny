@@ -17,11 +17,14 @@ void main(){
    n = unknown_int();
    assume( n>= 0 );
 
+
    i = 0; 
    a = 0; 
    b = 0;
 
    t = 1, t0 = 1;
+
+   int z = f(t);
 
    while ( i < n ) i++;
 
@@ -37,6 +40,10 @@ void main(){
       }
       i = i+1;
    }
+
+   int c;
+   c = -a;
+   c++;
 
    if ( a+b != 3*n)
       goto ERROR;

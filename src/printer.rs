@@ -212,8 +212,14 @@ impl DafnyPrinter {
                     .map(|arg| Self::print_type(arg))
                     .collect::<Vec<_>>()
                     .join(", "),
-                Self::print_type(ret)
+                match *(ret.clone()) {
+                    Some(t) => Self::print_type(&t),
+                    None => "void".to_string(),
+                }
             ),
+            _ => {
+                "".to_string()
+            }
         }
     }
 
@@ -227,13 +233,13 @@ impl DafnyPrinter {
 
     fn print_expr(expr: &Expr) -> String {
         match expr {
-            Expr::LogicalOr(lhs, rhs) => {
+            Expr::LogicalOr(lhs, rhs, _) => {
                 format!("({} || {})", Self::print_expr(lhs), Self::print_expr(rhs))
             }
-            Expr::LogicalAnd(lhs, rhs) => {
+            Expr::LogicalAnd(lhs, rhs, _) => {
                 format!("({} && {})", Self::print_expr(lhs), Self::print_expr(rhs))
             }
-            Expr::Equality(op, lhs, rhs) => format!(
+            Expr::Equality(op, lhs, rhs, _) => format!(
                 "({} {} {})",
                 Self::print_expr(lhs),
                 match op {
@@ -242,8 +248,8 @@ impl DafnyPrinter {
                 },
                 Self::print_expr(rhs)
             ),
-            Expr::Primary(primary) => Self::print_primary_expr(primary),
-            Expr::Additive(op, lhs, rhs) => {
+            Expr::Primary(primary, _) => Self::print_primary_expr(primary),
+            Expr::Additive(op, lhs, rhs, _) => {
                 format!(
                     "({} {} {})",
                     Self::print_expr(lhs),
@@ -254,7 +260,7 @@ impl DafnyPrinter {
                     Self::print_expr(rhs)
                 )
             }
-            Expr::Mult(op, lhs, rhs) => {
+            Expr::Mult(op, lhs, rhs, _) => {
                 format!(
                     "({} {} {})",
                     Self::print_expr(lhs),
@@ -266,7 +272,7 @@ impl DafnyPrinter {
                     Self::print_expr(rhs)
                 )
             }
-            Expr::Unary(op, expr) => {
+            Expr::Unary(op, expr, _) => {
                 format!(
                     "({} {})",
                     match op {
@@ -277,20 +283,20 @@ impl DafnyPrinter {
                     Self::print_expr(expr)
                 )
             }
-            Expr::BitwiseAnd(lhs, rhs) => {
+            Expr::BitwiseAnd(lhs, rhs, _) => {
                 format!("({} & {})", Self::print_expr(lhs), Self::print_expr(rhs))
             }
-            Expr::BitwiseOr(lhs, rhs) => {
+            Expr::BitwiseOr(lhs, rhs, _) => {
                 format!("({} | {})", Self::print_expr(lhs), Self::print_expr(rhs))
             }
-            Expr::BitwiseXor(lhs, rhs) => {
+            Expr::BitwiseXor(lhs, rhs, _) => {
                 format!("({} ^ {})", Self::print_expr(lhs), Self::print_expr(rhs))
             }
-            Expr::Shift(op, lhs, rhs) => match op {
+            Expr::Shift(op, lhs, rhs, _) => match op {
                 ShiftOp::Shl => format!("({} << {})", Self::print_expr(lhs), Self::print_expr(rhs)),
                 ShiftOp::Shr => format!("({} >> {})", Self::print_expr(lhs), Self::print_expr(rhs)),
             },
-            Expr::Comparison(op, lhs, rhs) => match op {
+            Expr::Comparison(op, lhs, rhs, _) => match op {
                 ComparisonOp::Lt => {
                     format!("({} < {})", Self::print_expr(lhs), Self::print_expr(rhs))
                 }
@@ -304,7 +310,7 @@ impl DafnyPrinter {
                     format!("({} >= {})", Self::print_expr(lhs), Self::print_expr(rhs))
                 }
             },
-            Expr::IfThenElse(cond, then_expr, else_expr) => {
+            Expr::IfThenElse(cond, then_expr, else_expr, _) => {
                 format!(
                     "if {} then {} else {}",
                     Self::print_expr(cond),

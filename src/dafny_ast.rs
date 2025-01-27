@@ -105,27 +105,57 @@ pub enum Type {
     Seq(Box<Type>),
     Array(Box<Type>),
     Named(String),
-    Function(Vec<Type>, Box<Type>),
+    Function(Vec<Type>, Box<Option<Type>>),
+    Star, // represnts any type for the any value
+    This, // represents the current object's type
+    Number, // represents any numeric type
+}
+
+// TODO: get the max type of two types
+pub fn max_ty(t1: Type, t2: Type) -> Type {
+    return Type::Int;
 }
 
 /* 表达式系统 */
 #[derive(Debug, Clone)]
 pub enum Expr {
-    LogicalOr(Box<Expr>, Box<Expr>),
-    LogicalAnd(Box<Expr>, Box<Expr>),
-    Equality(EqualityOp, Box<Expr>, Box<Expr>),
-    Comparison(ComparisonOp, Box<Expr>, Box<Expr>),
-    BitwiseOr(Box<Expr>, Box<Expr>),
-    BitwiseXor(Box<Expr>, Box<Expr>),
-    BitwiseAnd(Box<Expr>, Box<Expr>),
-    Shift(ShiftOp, Box<Expr>, Box<Expr>),
-    Additive(AdditiveOp, Box<Expr>, Box<Expr>),
-    Mult(MultOp, Box<Expr>, Box<Expr>),
-    Unary(UnaryOp, Box<Expr>),
-    Primary(PrimaryExpr),
-    Forall(Quantifier, Box<Expr>),
-    Exists(Quantifier, Box<Expr>),
-    IfThenElse(Box<Expr>, Box<Expr>, Box<Expr>),
+    LogicalOr(Box<Expr>, Box<Expr>, Type),
+    LogicalAnd(Box<Expr>, Box<Expr>, Type),
+    Equality(EqualityOp, Box<Expr>, Box<Expr>, Type),
+    Comparison(ComparisonOp, Box<Expr>, Box<Expr>, Type),
+    BitwiseOr(Box<Expr>, Box<Expr>, Type),
+    BitwiseXor(Box<Expr>, Box<Expr>, Type),
+    BitwiseAnd(Box<Expr>, Box<Expr>, Type),
+    Shift(ShiftOp, Box<Expr>, Box<Expr>, Type),
+    Additive(AdditiveOp, Box<Expr>, Box<Expr>, Type),
+    Mult(MultOp, Box<Expr>, Box<Expr>, Type),
+    Unary(UnaryOp, Box<Expr>, Type),
+    Primary(PrimaryExpr, Type),
+    Forall(Quantifier, Box<Expr>, Type),
+    Exists(Quantifier, Box<Expr>, Type),
+    IfThenElse(Box<Expr>, Box<Expr>, Box<Expr>, Type),
+}
+
+impl Expr {
+    pub fn get_type(&self) -> Type {
+        match self {
+            Expr::LogicalOr(_, _, ty) => ty.clone(),
+            Expr::LogicalAnd(_, _, ty) => ty.clone(),
+            Expr::Equality(_, _, _, ty) => ty.clone(),
+            Expr::Comparison(_, _, _, ty) => ty.clone(),
+            Expr::BitwiseOr(_, _, ty) => ty.clone(),
+            Expr::BitwiseXor(_, _, ty) => ty.clone(),
+            Expr::BitwiseAnd(_, _, ty) => ty.clone(),
+            Expr::Shift(_, _, _, ty) => ty.clone(),
+            Expr::Additive(_, _, _, ty) => ty.clone(),
+            Expr::Mult(_, _, _, ty) => ty.clone(),
+            Expr::Unary(_, _, ty) => ty.clone(),
+            Expr::Primary(_, ty) => ty.clone(),
+            Expr::Forall(_, _, ty) => ty.clone(),
+            Expr::Exists(_, _, ty) => ty.clone(),
+            Expr::IfThenElse(_, _, _, ty) => ty.clone(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
