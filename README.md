@@ -12,9 +12,9 @@
 - $T_p$: 从 C 的程序片段到 Dafny 的程序片段;
 - $T_c$: 从 C 的规约到 Dafny 的规约.
 
-那么我们要证明的是对于任意C的霍尔三元组 $\langle c_1, p, c_2 \rangle$, 其对应的Dafny三元组为 $\langle T_c (c_1), T_p (p), T_c (c_2) \rangle$.
+对于任意C的霍尔三元组 $\langle c_1, p, c_2 \rangle$, 其对应的Dafny三元组为 $\langle T_c (c_1), T_p (p), T_c (c_2) \rangle$.
 
-Soundness定义为如果后者成立, 那么前者一定成立.
+那么Soundness定义为如果后者成立, 那么前者一定成立.
 
 + 现在假设 $p$ 中出现了 `int` 类型, 并且出现了 `int` 的溢出操作, 那么 $p$ 后面进行什么操作都是可以的, 因为这是一个UB, 所以 $c_2$ 无论如何都将成立, 所以我们可以直接把 C 语言中的 `int` 建模为 Dafny 中的 `int` 类型.
 + 如果 $p$ 中出现了 `unsigned char` 和 `unsigned int`, 他们的溢出操作是有定义的回绕, 所以必须是 `bv` 类型.
