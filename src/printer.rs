@@ -49,7 +49,23 @@ impl DafnyPrinter {
             result.push_str(&Self::print_expr_list(&method.ensures));
         }
 
-        result.push_str(" {\n");
+        if !method.decreases.is_empty() {
+            result.push('\n');
+            result.push_str(&Self::indent(indent_level + 1));
+            result.push_str("decreases ");
+            result.push_str(&Self::print_expr_list(&method.decreases));
+        }
+
+        if !method.modifies.is_empty() {
+            result.push('\n');
+            result.push_str(&Self::indent(indent_level + 1));
+            result.push_str("modifies ");
+            result.push_str(&Self::print_expr_list(&method.modifies));
+        }
+
+        result.push('\n');
+        result.push_str(&Self::indent(indent_level));
+        result.push_str("{\n");
         result.push_str(&Self::print_block(&method.block, indent_level + 1));
         result.push_str(&Self::indent(indent_level));
         result.push_str("}\n");
@@ -397,6 +413,12 @@ impl DafnyPrinter {
                     ));
                 }
             }
+            Stmt::Break => {
+                result.push_str("break;");
+            }
+            Stmt::Continue => {
+                result.push_str("continue;");
+            }
         }
         result
     }
@@ -434,18 +456,21 @@ impl DafnyPrinter {
     }
 
     fn print_while_loop(while_loop: &WhileLoop, indent_level: usize) -> String {
-        let mut result = format!("while ({})", Self::print_expr(&while_loop.cond));
+        let mut result = format!("while {}\n", Self::print_expr(&while_loop.cond));
         if !while_loop.invariants.is_empty() {
-            result.push_str(" invariant ");
+            result.push_str(&Self::indent(indent_level + 1));
+            result.push_str("invariant ");
             result.push_str(&Self::print_expr_list(&while_loop.invariants));
-            result.push(';');
+            result.push('\n');
         }
         if !while_loop.decreases.is_empty() {
-            result.push_str(" decreases ");
+            result.push_str(&Self::indent(indent_level + 1));
+            result.push_str("decreases ");
             result.push_str(&Self::print_expr_list(&while_loop.decreases));
-            result.push(';');
+            result.push('\n');
         }
-        result.push_str(" {\n");
+        result.push_str(&Self::indent(indent_level));
+        result.push_str("{\n");
         result.push_str(&Self::print_block(&while_loop.block, indent_level + 1));
         result.push_str(&Self::indent(indent_level));
         result.push('}');

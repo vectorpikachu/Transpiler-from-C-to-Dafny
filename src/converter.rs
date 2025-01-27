@@ -241,33 +241,93 @@ fn parse_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<St
             parse_expr_stmt(&stmt_body, context, source).unwrap()
         }
         "while_statement" => {
-            // TODO: Parse while statement
-            vec![]
+            let stmt = parse_while_stmt(&node, context, source);
+            match stmt {
+                Some(stmt) => stmt,
+                None => vec![],
+            }
+        }
+        "compound_statement" => {
+            let stmt = parse_compound_stmt(&node, context, source);
+            match stmt {
+                Some(stmt) => stmt,
+                None => vec![],
+            }
         }
         "if_statement" => {
             // TODO: Parse if statement
             vec![]
         }
         "goto_statement" => {
-            // TODO: Parse goto statement
-            vec![]
+            // TODO: Parse goto statement more accurately
+            let label = node.child(1).unwrap();
+            let label_name = label
+                .utf8_text(source.as_bytes())
+                .expect("Failed to parse label name");
+            let mut stmt = vec![];
+            match label_name {
+                "ERROR" => {
+                    stmt.push(Stmt::Assert(Expr::Primary(PrimaryExpr::Literal(
+                        Literal::Boolean(true),
+                    ))));
+                }
+                "LOOPEND" => {
+                    stmt.push(Stmt::Break);
+                }
+                _ => {}
+            }
+            stmt
         }
         "labeled_statement" => {
-            // TODO: Parse labeled statement
-            vec![]
+            // TODO: Parse labeled statement more accurately
+            let stmt_body = node.child(2).unwrap();
+            let stmt = parse_stmt(&stmt_body, context, source);
+            match stmt {
+                Some(stmt) => stmt,
+                None => vec![],
+            }
+        }
+        "break_statement" => {
+            vec![Stmt::Break]
+        }
+        "continue_statement" => {
+            vec![Stmt::Continue]
         }
         _ => vec![], // TODO: Parse other statements
     };
 
     stmts.extend(stmt);
 
+    if stmts.is_empty() {
+        return None;
+    }
+
     Some(stmts)
 }
 
 // TODO: Parse expressions
-fn parse_expr(node: &Node, context: &Context, source: &str) -> Option<Expr> {
-    None
+fn parse_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> {
+    println!(
+        "Parsing expression: {:?} with kind {:?}\n",
+        node,
+        node.kind()
+    );
+    let exp = match node.kind() {
+        "parenthesized_expression" => parse_expr(&node.child(1).unwrap(), context, source),
+        "binary_expression" => parse_binary_expr(node, context, source),
+        "identifier" => {
+            let id = node.utf8_text(source.as_bytes()).unwrap();
+            println!("Parsed identifier: {}", id);
+            Some(Expr::Primary(PrimaryExpr::Identifier(id.to_string())))
+        }
+        _ => {
+            // TODO: Parse other expressions
+            None
+        }
+    };
+    exp
 }
+// TODO: get any expression's type
 
 /// 生成构造函数
 fn generate_constructor(vars: &Vec<FieldDecl>, context: &Context, source: &str) -> ConstructorDecl {
@@ -438,5 +498,64 @@ fn parse_comma_statement(node: &Node, context: &mut Context, source: &str) -> Op
             stmts.extend(stmt.unwrap());
         }
     }
-   Some(stmts)
+    Some(stmts)
+}
+
+fn parse_while_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
+    let cond = parse_expr(&node.child(1).unwrap(), context, source);
+    let body = parse_stmt(&node.child(2).unwrap(), context, source);
+    if cond.is_some() && body.is_some() {
+        return Some(vec![Stmt::WhileLoop(WhileLoop {
+            cond: cond.unwrap(),
+            invariants: vec![],
+            decreases: vec![Expr::Primary(PrimaryExpr::Literal(Literal::Star))],
+            block: Block {
+                stmts: body.unwrap(),
+            },
+        })]);
+    }
+    None
+}
+
+fn parse_binary_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> {
+    let lhs = parse_expr(&node.child(0).unwrap(), context, source);
+    let rhs = parse_expr(&node.child(2).unwrap(), context, source);
+    if lhs.is_none() || rhs.is_none() {
+        return None;
+    }
+    let op = node.child(1).unwrap();
+    let exp = match op.kind() {
+        "<" => Expr::Comparison(
+            ComparisonOp::Lt,
+            Box::new(lhs.unwrap()),
+            Box::new(rhs.unwrap()),
+        ),
+        ">" => Expr::Comparison(
+            ComparisonOp::Gt,
+            Box::new(lhs.unwrap()),
+            Box::new(rhs.unwrap()),
+        ),
+        _ => {
+            // TODO: 处理其他比较操作符
+            return None;
+        }
+    };
+    Some(exp)
+}
+
+fn parse_compound_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
+    let mut stmts = vec![];
+    for child in node.children(&mut node.walk()) {
+        if child.kind() == "{" || child.kind() == "}" {
+            continue;
+        }
+        let stmt = parse_stmt(&child, context, source);
+        if stmt.is_some() {
+            stmts.extend(stmt.unwrap());
+        }
+    }
+    if stmts.is_empty() {
+        return None;
+    }
+    Some(stmts)
 }

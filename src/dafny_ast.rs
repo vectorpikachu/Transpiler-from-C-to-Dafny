@@ -184,6 +184,8 @@ pub enum Stmt {
     Print(Expr),
     Return(Option<Expr>),
     DeclVar(Var),
+    Break,
+    Continue,
 }
 
 #[derive(Debug, Clone)]
