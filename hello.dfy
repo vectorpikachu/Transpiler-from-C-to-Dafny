@@ -1,10 +1,26 @@
 class CProgram {
   var t: int
-  constructor()
+  var t0: int
+  constructor(){
+    t := 0;
+    t0 := 0;
+  }
   method f(x: int) returns (ret: int) {
+    return ;
   }
 
   method main() {
+    var i : int;
+    var n : int;
+    var a : int;
+    var b : int;
+    n := 0;
+    i := 0;
+    a := 0;
+    b := 0;
+    t := 0;
+    t0 := 0;
+    return ;
   }
 
 }

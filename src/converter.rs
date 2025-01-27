@@ -1,7 +1,9 @@
 use tree_sitter::{Node, Tree};
 
-use crate::{context::Context, dafny_ast::*};
-
+use crate::{
+    context::{self, Context},
+    dafny_ast::*,
+};
 
 /// 将 C 语法树 转换为 Dafny AST
 pub fn convert(tree: Tree, context: &mut Context, source: &str) -> Program {
@@ -18,7 +20,7 @@ pub fn convert(tree: Tree, context: &mut Context, source: &str) -> Program {
         match child.kind() {
             "declaration" => {
                 if let Some(global) = parse_global_var(&child, context, source) {
-                    global_vars.push(global);
+                    global_vars.extend(global);
                 }
             }
             "function_definition" => {
@@ -48,37 +50,51 @@ pub fn convert(tree: Tree, context: &mut Context, source: &str) -> Program {
 }
 
 /// 解析全局变量
-fn parse_global_var(node: &Node, context: &mut Context, source: &str) -> Option<FieldDecl> {
-    let decl = node
-        .child_by_field_name("declarator")?;
-    if decl.kind() == "function_declarator" {
-        return None;
-    }
-    println!("parse_global_var: {:?}", decl);
-    let mut name = decl.utf8_text(source.as_bytes());
-    let mut init = None;
-    println!("xxxx {:?} {:?}", decl.field_name_for_child(2), decl.child_by_field_name("value"));
-    if let Some(init_value) = decl.child_by_field_name("value") {
-        name = decl.child_by_field_name("declarator")?.utf8_text(source.as_bytes());
-        init = parse_expr(&init_value, context, source);
-    }
-    
-    println!("name: {:?}", name);
-    match name {
-        Ok(name) => {
-            let ty = node.child_by_field_name("type")?;
-            println!("ty: {:?}", ty);
-            let dafny_ty = parse_type(&ty, context, source)?;
-            Some(FieldDecl {
-                id: name.to_string(),
-                type_: dafny_ty,
-                init: init,
-            })
+/// 一个 Declaration里面可能声明了很多变量
+fn parse_global_var(node: &Node, context: &mut Context, source: &str) -> Option<Vec<FieldDecl>> {
+    let mut fields = vec![];
+
+    for decl in node.children_by_field_name("declarator", &mut node.walk()) {
+        if decl.kind() == "function_declarator" {
+            continue;
         }
-        Err(e) => {
-            println!("Error parsing field name: {}", e);
-            None
+        println!("parse_global_var: {:?}", decl);
+        let mut name = decl.utf8_text(source.as_bytes());
+        let mut init = None;
+        println!(
+            "xxxx {:?} {:?}",
+            decl.field_name_for_child(2),
+            decl.child_by_field_name("value")
+        );
+        if let Some(init_value) = decl.child_by_field_name("value") {
+            name = decl
+                .child_by_field_name("declarator")?
+                .utf8_text(source.as_bytes());
+            init = parse_expr(&init_value, context, source);
         }
+
+        println!("name: {:?}", name);
+        match name {
+            Ok(name) => {
+                let ty = node.child_by_field_name("type")?;
+                println!("ty: {:?}", ty);
+                let dafny_ty = parse_type(&ty, context, source)?;
+                fields.push(FieldDecl {
+                    id: name.to_string(),
+                    type_: dafny_ty,
+                    init: init,
+                });
+            }
+            Err(e) => {
+                println!("Error parsing field name: {}", e);
+            }
+        }
+    }
+
+    if fields.is_empty() {
+        None
+    } else {
+        Some(fields)
     }
 }
 
@@ -115,18 +131,22 @@ fn parse_function(node: &Node, context: &mut Context, source: &str) -> Option<Me
 
     // 必须要有函数体
     let func_body = node.child_by_field_name("body")?;
+    println!("Func body***: {:?}", func_body);
     let mut stmts = vec![];
     for child in func_body.children(&mut func_body.walk()) {
         let stmt = parse_stmt(&child, context, source);
         if stmt.is_none() {
             continue;
         }
-        stmts.push(stmt.unwrap());
+        stmts.extend(stmt.unwrap());
     }
 
     let returns = match func_type.clone() {
         Some(t) => {
-            vec![ReturnVar {id: "ret".to_string(), type_: t}]
+            vec![ReturnVar {
+                id: "ret".to_string(),
+                type_: t,
+            }]
         }
         None => vec![],
     };
@@ -134,7 +154,7 @@ fn parse_function(node: &Node, context: &mut Context, source: &str) -> Option<Me
     let modify_expr = Expr::Primary(PrimaryExpr::Literal(Literal::This));
 
     let decrease_expr = Expr::Primary(PrimaryExpr::Literal(Literal::Star));
-    
+
     let method_decl = MethodDecl {
         id: func_name.unwrap(),
         params: func_params.unwrap(),
@@ -206,14 +226,33 @@ fn parse_func_params(node: &Node, context: &mut Context, source: &str) -> Option
     Some(params)
 }
 
+fn parse_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
+    println!("\nparse_stmt: {:?}\n", node);
+    println!("kind {:?}", node.kind());
 
-// todo
-fn parse_stmt(node: &Node, context: &Context, source: &str) -> Option<Stmt> {
-    None
+    let mut stmts = vec![];
+
+    let stmt = match node.kind() {
+        "return_statement" => vec![parse_return(node, context, source).unwrap()],
+        "declaration" => parse_declaration(node, context, source).unwrap(),
+        "expression_statement" => {
+            // 包含了函数调用 / 变量赋值 等
+            let stmt_body = node.child(0).unwrap();
+            parse_expr_stmt(&stmt_body, context, source).unwrap()
+        }
+        "while_statement" => {
+            // TODO: Parse while statement
+            vec![]
+        }
+        _ => vec![], // TODO: Parse other statements
+    };
+
+    stmts.extend(stmt);
+
+    Some(stmts)
 }
 
-
-// todo
+// TODO: Parse expressions
 fn parse_expr(node: &Node, context: &Context, source: &str) -> Option<Expr> {
     None
 }
@@ -221,15 +260,27 @@ fn parse_expr(node: &Node, context: &Context, source: &str) -> Option<Expr> {
 /// 生成构造函数
 fn generate_constructor(vars: &Vec<FieldDecl>, context: &Context, source: &str) -> ConstructorDecl {
     let modify_expr = Expr::Primary(PrimaryExpr::Literal(Literal::This));
-    
+
     let mut stmts = vec![];
     for var in vars {
         if var.init.is_some() {
-            let stmt = Stmt::Assign(Assign { lhs: Lhs::Identifier(var.id.to_string()), expr: var.init.clone().unwrap() });
+            let stmt = Stmt::Assign(Assign {
+                lhs: Lhs::Identifier(var.id.to_string()),
+                expr: var.init.clone().unwrap(),
+            });
+            stmts.push(stmt);
+        } else {
+            let zero_expr = Expr::Primary(PrimaryExpr::Literal(Literal::Integer("0".to_string())));
+            let stmt = Stmt::Assign(Assign {
+                lhs: Lhs::Identifier(var.id.to_string()),
+                expr: zero_expr,
+            });
             stmts.push(stmt);
         }
-        
     }
+
+    println!("Constructor {:?}", stmts);
+
     ConstructorDecl {
         params: vec![],
         requires: vec![],
@@ -237,4 +288,143 @@ fn generate_constructor(vars: &Vec<FieldDecl>, context: &Context, source: &str) 
         modifies: vec![modify_expr],
         block: Block { stmts: stmts },
     }
+}
+
+fn parse_return(node: &Node, context: &mut Context, source: &str) -> Option<Stmt> {
+    println!("stmt return expr {:?}", node.field_name_for_child(2));
+    let mut ret_expr = None;
+    for child_node in node.children(&mut node.walk()) {
+        match child_node.kind() {
+            "identifier" => {
+                println!(
+                    "stmt return id {:?}",
+                    child_node.utf8_text(source.as_bytes())
+                );
+                ret_expr = Some(Expr::Primary(PrimaryExpr::Identifier(
+                    child_node
+                        .utf8_text(source.as_bytes())
+                        .expect("identifier failed")
+                        .to_string(),
+                )));
+            }
+            ";" => {}
+            "return" => {}
+            _ => {
+                // Expressions
+                println!("{:?}", child_node.utf8_text(source.as_bytes()));
+                ret_expr = parse_expr(&child_node, context, source);
+            }
+        }
+    }
+    Some(Stmt::Return(ret_expr))
+}
+
+fn parse_declaration(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
+    let mut stmts = vec![];
+
+    for decl in node.children_by_field_name("declarator", &mut node.walk()) {
+        if decl.kind() == "function_declarator" {
+            continue;
+        }
+        println!("parse_declaration: {:?}", decl);
+        let mut name = decl.utf8_text(source.as_bytes());
+        let mut init = None;
+        println!(
+            "xxxx {:?} {:?}",
+            decl.field_name_for_child(2),
+            decl.child_by_field_name("value")
+        );
+        if let Some(init_value) = decl.child_by_field_name("value") {
+            name = decl
+                .child_by_field_name("declarator")?
+                .utf8_text(source.as_bytes());
+            init = parse_expr(&init_value, context, source);
+        }
+
+        println!("name: {:?}", name);
+        match name {
+            Ok(name) => {
+                let ty = node.child_by_field_name("type")?;
+                println!("ty: {:?}", ty);
+                let dafny_ty = parse_type(&ty, context, source)?;
+                stmts.push(Stmt::DeclVar(Var {
+                    id: name.to_string(),
+                    type_: dafny_ty,
+                    init: init,
+                }));
+            }
+            Err(e) => {
+                println!("Error parsing field name: {}", e);
+            }
+        }
+    }
+
+    if stmts.is_empty() {
+        None
+    } else {
+        Some(stmts)
+    }
+}
+
+fn parse_expr_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
+    println!("parse_expr_stmt: {:?}", node.child(0));
+    let mut stmts = vec![];
+    match node.kind() {
+        "assignment_expression" => {
+            let stmt = parse_assign_statement(&node, context, source);
+            if stmt.is_some() {
+                stmts.push(stmt.unwrap());
+            }
+        }
+        "comma_expression" => {
+            let comma_stmts = parse_comma_statement(&node, context, source);
+            if comma_stmts.is_some() {
+                stmts.extend(comma_stmts.unwrap());
+            }
+        }
+        _ => {}
+    }
+
+    Some(stmts)
+}
+
+fn parse_assign_statement(node: &Node, context: &mut Context, source: &str) -> Option<Stmt> {
+    let id = node.child(0).unwrap();
+    let expr = node.child(2).unwrap();
+
+    println!(
+        "assign_statement: {:?} = {:?}",
+        id.utf8_text(source.as_bytes()),
+        expr.utf8_text(source.as_bytes())
+    );
+
+    let id_name = id
+        .utf8_text(source.as_bytes())
+        .expect("Failed to get identifier name");
+
+    let expr = parse_expr(&expr, context, source);
+    let expr = match expr {
+        Some(expr) => expr,
+        None => Expr::Primary(PrimaryExpr::Literal(Literal::Integer("0".to_string()))),
+    };
+
+    Some(Stmt::Assign(Assign {
+        lhs: Lhs::Identifier(id_name.to_string()),
+        expr: expr,
+    }))
+}
+
+fn parse_comma_statement(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
+    let mut stmts = vec![];
+    for child in node.children(&mut node.walk()) {
+        if child.kind() == "," {
+            continue;
+        }
+        println!("child: {:?}", child);
+        let stmt = parse_expr_stmt(&child, context, source);
+        if stmt.is_some() {
+            stmts.extend(stmt.unwrap());
+        }
+    }
+   Some(stmts)
 }

@@ -180,8 +180,17 @@ pub enum Stmt {
     WhileLoop(WhileLoop),
     ForLoop(ForLoop),
     Match(Match),
-    Assert(Box<Expr>),
-    Print(Box<Expr>),
+    Assert(Expr),
+    Print(Expr),
+    Return(Option<Expr>),
+    DeclVar(Var),
+}
+
+#[derive(Debug, Clone)]
+pub struct Var {
+    pub id: String,
+    pub type_: Type,
+    pub init: Option<Expr>,
 }
 
 #[derive(Debug, Clone)]

@@ -3,12 +3,12 @@
 #define assume(e) if(!(e)) exit(-1);
 extern int unknown_int(void);
 
-int t;
+int t, t0;
 
 ;
 
 int f(int x) {
-   return x;
+   return x + 1;
 }
 
 void main(){
@@ -20,6 +20,10 @@ void main(){
    i = 0; 
    a = 0; 
    b = 0;
+
+   t = 1, t0 = 1;
+
+   while ( i < n ) i++;
 
    while( i < n ){
       if(unknown_int()) {

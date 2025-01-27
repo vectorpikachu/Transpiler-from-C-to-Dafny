@@ -14,11 +14,13 @@ impl DafnyPrinter {
 
     fn print_declaration(decl: &Declaration, indent_level: usize) -> String {
         match decl {
-            Declaration::Method(method) => Self::print_method_decl(method, indent_level + 1),
-            Declaration::Function(function) => Self::print_function_decl(function, indent_level + 1),
-            Declaration::Predicate(predicate) => Self::print_predicate_decl(predicate, indent_level + 1),
-            Declaration::Datatype(datatype) => Self::print_datatype_decl(datatype, indent_level + 1),
-            Declaration::Class(class) => Self::print_class_decl(class, indent_level + 1),
+            Declaration::Method(method) => Self::print_method_decl(method, indent_level),
+            Declaration::Function(function) => Self::print_function_decl(function, indent_level),
+            Declaration::Predicate(predicate) => {
+                Self::print_predicate_decl(predicate, indent_level)
+            }
+            Declaration::Datatype(datatype) => Self::print_datatype_decl(datatype, indent_level),
+            Declaration::Class(class) => Self::print_class_decl(class, indent_level),
         }
     }
 
@@ -122,11 +124,18 @@ impl DafnyPrinter {
 
     fn print_constructor_decl(constructor: &ConstructorDecl, indent_level: usize) -> String {
         let params = Self::print_params(&constructor.params);
-        format!("{}constructor({})", Self::indent(indent_level), params)
+        let body = Self::print_block(&constructor.block, indent_level + 1);
+        format!(
+            "{}constructor({}){{\n{}{}}}",
+            Self::indent(indent_level),
+            params,
+            body,
+            Self::indent(indent_level)
+        )
     }
 
     fn print_class_decl(class: &ClassDecl, indent_level: usize) -> String {
-        let mut result = format!("class {}", class.id);
+        let mut result = format!("{}class {}", Self::indent(indent_level), class.id);
         if let Some(parent) = &class.extends {
             result.push_str(&format!("extends {}", Self::print_type(parent)));
         }
@@ -135,19 +144,19 @@ impl DafnyPrinter {
         for field in &class.fields {
             result.push_str(&format!(
                 "{}var {}: {}\n",
-                Self::indent(indent_level),
+                Self::indent(indent_level + 1),
                 field.id,
                 Self::print_type(&field.type_)
             ));
         }
 
         if let Some(constructor) = &class.constructor {
-            result.push_str(&Self::print_constructor_decl(constructor, indent_level));
+            result.push_str(&Self::print_constructor_decl(constructor, indent_level + 1));
             result.push('\n');
         }
 
         for method in &class.methods {
-            result.push_str(&Self::print_method_decl(method, indent_level));
+            result.push_str(&Self::print_method_decl(method, indent_level + 1));
             result.push('\n');
         }
 
@@ -193,21 +202,21 @@ impl DafnyPrinter {
     }
 
     fn print_expr_list(exprs: &[Expr]) -> String {
-        exprs.iter().map(Self::print_expr).collect::<Vec<_>>().join(", ")
+        exprs
+            .iter()
+            .map(Self::print_expr)
+            .collect::<Vec<_>>()
+            .join(", ")
     }
 
     fn print_expr(expr: &Expr) -> String {
         match expr {
-            Expr::LogicalOr(lhs, rhs) => format!(
-                "({} || {})",
-                Self::print_expr(lhs),
-                Self::print_expr(rhs)
-            ),
-            Expr::LogicalAnd(lhs, rhs) => format!(
-                "({} && {})",
-                Self::print_expr(lhs),
-                Self::print_expr(rhs)
-            ),
+            Expr::LogicalOr(lhs, rhs) => {
+                format!("({} || {})", Self::print_expr(lhs), Self::print_expr(rhs))
+            }
+            Expr::LogicalAnd(lhs, rhs) => {
+                format!("({} && {})", Self::print_expr(lhs), Self::print_expr(rhs))
+            }
             Expr::Equality(op, lhs, rhs) => format!(
                 "({} {} {})",
                 Self::print_expr(lhs),
@@ -261,20 +270,24 @@ impl DafnyPrinter {
             Expr::BitwiseXor(lhs, rhs) => {
                 format!("({} ^ {})", Self::print_expr(lhs), Self::print_expr(rhs))
             }
-            Expr::Shift(op, lhs, rhs) => {
-                match op {
-                    ShiftOp::Shl => format!("({} << {})", Self::print_expr(lhs), Self::print_expr(rhs)),
-                    ShiftOp::Shr => format!("({} >> {})", Self::print_expr(lhs), Self::print_expr(rhs)),
+            Expr::Shift(op, lhs, rhs) => match op {
+                ShiftOp::Shl => format!("({} << {})", Self::print_expr(lhs), Self::print_expr(rhs)),
+                ShiftOp::Shr => format!("({} >> {})", Self::print_expr(lhs), Self::print_expr(rhs)),
+            },
+            Expr::Comparison(op, lhs, rhs) => match op {
+                ComparisonOp::Lt => {
+                    format!("({} < {})", Self::print_expr(lhs), Self::print_expr(rhs))
                 }
-            }
-            Expr::Comparison(op, lhs, rhs) => {
-                match op {
-                    ComparisonOp::Lt => format!("({} < {})", Self::print_expr(lhs), Self::print_expr(rhs)),
-                    ComparisonOp::Gt => format!("({} > {})", Self::print_expr(lhs), Self::print_expr(rhs)),
-                    ComparisonOp::Le => format!("({} <= {})", Self::print_expr(lhs), Self::print_expr(rhs)),
-                    ComparisonOp::Ge => format!("({} >= {})", Self::print_expr(lhs), Self::print_expr(rhs)),
+                ComparisonOp::Gt => {
+                    format!("({} > {})", Self::print_expr(lhs), Self::print_expr(rhs))
                 }
-            }
+                ComparisonOp::Le => {
+                    format!("({} <= {})", Self::print_expr(lhs), Self::print_expr(rhs))
+                }
+                ComparisonOp::Ge => {
+                    format!("({} >= {})", Self::print_expr(lhs), Self::print_expr(rhs))
+                }
+            },
             Expr::IfThenElse(cond, then_expr, else_expr) => {
                 format!(
                     "if {} then {} else {}",
@@ -283,7 +296,7 @@ impl DafnyPrinter {
                     Self::print_expr(else_expr)
                 )
             }
-            _ => unimplemented!()
+            _ => unimplemented!(),
         }
     }
 
@@ -291,7 +304,9 @@ impl DafnyPrinter {
         match primary {
             PrimaryExpr::Literal(literal) => Self::print_literal(literal),
             PrimaryExpr::Identifier(name) => name.clone(),
-            PrimaryExpr::Index(expr, id) => format!("{}[{}]", Self::print_expr(expr), Self::print_expr(id)),
+            PrimaryExpr::Index(expr, id) => {
+                format!("{}[{}]", Self::print_expr(expr), Self::print_expr(id))
+            }
             PrimaryExpr::MemberAccess(expr, name) => format!("{}.{}", Self::print_expr(expr), name),
             PrimaryExpr::Call(expr, args) => {
                 let mut args_str = String::new();
@@ -302,7 +317,7 @@ impl DafnyPrinter {
                 args_str.pop();
                 args_str.pop();
                 format!("{}({})", Self::print_expr(expr), args_str)
-           },
+            }
         }
     }
 
@@ -320,14 +335,13 @@ impl DafnyPrinter {
                 }
                 result += "]";
                 result
-            },
+            }
         }
     }
 
     fn print_block(block: &Block, indent_level: usize) -> String {
         let mut result = String::new();
         for stmt in &block.stmts {
-            result.push_str("  ");
             result.push_str(&Self::print_stmt(stmt, indent_level));
             result.push('\n');
         }
@@ -358,10 +372,35 @@ impl DafnyPrinter {
             Stmt::Print(expr) => {
                 result.push_str(&format!("print {};", Self::print_expr(expr)));
             }
+            Stmt::Return(expr) => {
+                result.push_str(&format!(
+                    "return {};",
+                    match expr {
+                        Some(e) => Self::print_expr(e),
+                        None => "".to_string(),
+                    }
+                ));
+            }
+            Stmt::DeclVar(var) => {
+                if var.init.is_some() {
+                    result.push_str(&format!(
+                        "var {} : {} := {};",
+                        var.id,
+                        Self::print_type(&var.type_),
+                        Self::print_expr(var.init.as_ref().unwrap())
+                    ));
+                } else {
+                    result.push_str(&format!(
+                        "var {} : {};",
+                        var.id,
+                        Self::print_type(&var.type_)
+                    ));
+                }
+            }
         }
         result
     }
-    
+
     fn print_assign(assign: &Assign) -> String {
         format!(
             "{} := {};",
@@ -369,15 +408,17 @@ impl DafnyPrinter {
             Self::print_expr(&assign.expr)
         )
     }
-    
+
     fn print_lhs(lhs: &Lhs) -> String {
         match lhs {
             Lhs::Identifier(name) => name.clone(),
             Lhs::MemberAccess(object, field) => format!("{}.{}", Self::print_expr(object), field),
-            Lhs::Index(array, index) => format!("{}[{}]", Self::print_expr(array), Self::print_expr(index)),
+            Lhs::Index(array, index) => {
+                format!("{}[{}]", Self::print_expr(array), Self::print_expr(index))
+            }
         }
     }
-    
+
     fn print_if_else(if_else: &IfElse, indent_level: usize) -> String {
         let mut result = format!("if ({}) {{\n", Self::print_expr(&if_else.cond));
         result.push_str(&Self::print_block(&if_else.then_block, indent_level + 1));
@@ -391,7 +432,7 @@ impl DafnyPrinter {
         }
         result
     }
-    
+
     fn print_while_loop(while_loop: &WhileLoop, indent_level: usize) -> String {
         let mut result = format!("while ({})", Self::print_expr(&while_loop.cond));
         if !while_loop.invariants.is_empty() {
@@ -410,7 +451,7 @@ impl DafnyPrinter {
         result.push('}');
         result
     }
-    
+
     fn print_for_loop(for_loop: &ForLoop, indent_level: usize) -> String {
         let mut result = format!(
             "for {} := {} to {} {{\n",
@@ -423,7 +464,7 @@ impl DafnyPrinter {
         result.push('}');
         result
     }
-    
+
     fn print_match(match_stmt: &Match, indent_level: usize) -> String {
         let mut result = format!("match {} {{\n", Self::print_expr(&match_stmt.expr));
         for case in &match_stmt.cases {
@@ -434,11 +475,13 @@ impl DafnyPrinter {
         result.push('}');
         result
     }
-    
+
     fn print_case(case: &Case, indent_level: usize) -> String {
-        let mut result = format!("{}case {} => {{\n", 
+        let mut result = format!(
+            "{}case {} => {{\n",
             Self::indent(indent_level),
-            Self::print_pattern(&case.pattern));
+            Self::print_pattern(&case.pattern)
+        );
         for stmt in &case.stmts {
             result.push_str("  ");
             result.push_str(&Self::print_stmt(stmt, indent_level + 1));
@@ -448,7 +491,7 @@ impl DafnyPrinter {
         result.push('}');
         result
     }
-    
+
     fn print_pattern(pattern: &Pattern) -> String {
         match pattern {
             Pattern::Identifier(name) => name.clone(),
@@ -466,5 +509,4 @@ impl DafnyPrinter {
     fn indent(level: usize) -> String {
         "  ".repeat(level)
     }
-    
 }
