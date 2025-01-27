@@ -43,7 +43,7 @@ void main(){
 return;
 
 { ERROR: {; 
-//@ assert(\false);
+   assert(false);
 }
 }
 } (1:1 - 48:2)
@@ -136,7 +136,7 @@ return;
 return;
 
 { ERROR: {; 
-//@ assert(\false);
+   assert(false);
 }
 }
 } (14:1 - 48:2)
@@ -177,7 +177,7 @@ return;
 return;
 
 { ERROR: {; 
-//@ assert(\false);
+   assert(false);
 }
 }
 } (14:12 - 48:2)
@@ -389,22 +389,29 @@ return;
         return: return (42:1 - 42:7)
         ;: ; (42:7 - 42:8)
       compound_statement: { ERROR: {; 
-//@ assert(\false);
+   assert(false);
 }
 } (44:1 - 47:2)
         {: { (44:1 - 44:2)
         labeled_statement: ERROR: {; 
-//@ assert(\false);
+   assert(false);
 } (44:3 - 46:2)
           statement_identifier: ERROR (44:3 - 44:8)
           :: : (44:8 - 44:9)
           compound_statement: {; 
-//@ assert(\false);
+   assert(false);
 } (44:10 - 46:2)
             {: { (44:10 - 44:11)
             expression_statement: ; (44:11 - 44:12)
               ;: ; (44:11 - 44:12)
-            comment: //@ assert(\false); (45:1 - 45:21)
+            expression_statement: assert(false); (45:4 - 45:18)
+              call_expression: assert(false) (45:4 - 45:17)
+                identifier: assert (45:4 - 45:10)
+                argument_list: (false) (45:10 - 45:17)
+                  (: ( (45:10 - 45:11)
+                  false: false (45:11 - 45:16)
+                  ): ) (45:16 - 45:17)
+              ;: ; (45:17 - 45:18)
             }: } (46:1 - 46:2)
         }: } (47:1 - 47:2)
       }: } (48:1 - 48:2)

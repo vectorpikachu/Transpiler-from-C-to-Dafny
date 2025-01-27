@@ -42,7 +42,7 @@ void main(){
 return;
 
 { ERROR: {; 
-//@ assert(\false);
+   assert(false);
 }
 }
 }

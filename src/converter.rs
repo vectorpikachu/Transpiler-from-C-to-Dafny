@@ -244,6 +244,18 @@ fn parse_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<St
             // TODO: Parse while statement
             vec![]
         }
+        "if_statement" => {
+            // TODO: Parse if statement
+            vec![]
+        }
+        "goto_statement" => {
+            // TODO: Parse goto statement
+            vec![]
+        }
+        "labeled_statement" => {
+            // TODO: Parse labeled statement
+            vec![]
+        }
         _ => vec![], // TODO: Parse other statements
     };
 
