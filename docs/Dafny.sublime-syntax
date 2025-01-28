@@ -1,0 +1,76 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/syntax.html
+name: Dafny
+file_extensions:
+  - dfy
+scope: text.dfy.dafny
+contexts:
+  main:
+    - match: \b(class|datatype|codatatype|type|function|ghost|var|method|constructor|comethod|abstract|module|import|default|as|opened|static|refines|returns|break|then|else|if|label|return|while|print|where|new|parallel|in|this|fresh|choose|match|case|assert|assume|predicate|copredicate|forall|exists|false|true|null|old|calc|iterator|yields|yield)\b
+      scope: keyword.control.dafny
+    - match: <.+?>
+      scope: storage.type.dafny
+    - match: (\w+)\s*\(
+      captures:
+        1: entity.name.function.dafny
+      push:
+        - meta_scope: meta.method.identifier.dafny
+        - match: \)
+          pop: true
+        - include: parameters
+    - include: code
+  code:
+    - include: comments
+    - include: comments-inline
+    - include: keywords
+  comments:
+    - match: /\*\*/
+      scope: comment.block.empty.dafny
+      captures:
+        0: punctuation.definition.comment.dafny
+    - include: comments-inline
+  comments-inline:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.dafny
+      push:
+        - meta_scope: comment.block.dafny
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.dafny
+          pop: true
+    - match: \s*((//).*$\n?)
+      captures:
+        1: comment.line.double-slash.dafny
+        2: punctuation.definition.comment.dafny
+  keywords:
+    - match: \b(class|datatype|codatatype|type|function|ghost|var|method|constructor|comethod|abstract|module|import|default|as|opened|static|refines|returns|break|then|else|if|label|return|while|print|where|new|parallel|in|this|fresh|choose|match|case|assert|assume|predicate|copredicate|forall|exists|false|true|null|old|calc|iterator|yields|yield)\b
+      scope: keyword.control.dafny
+    - match: \b(function)\b
+      scope: entity.name.function
+    - match: ;
+      scope: punctuation.terminator.dafny
+    - match: \b(requires|ensures|modifies|reads|free|invariant|decreases)\b
+      scope: keyword.control.verify.dafny
+    - match: \b(bool|multiset|map|nat|int|object|set|seq|array)\b
+      scope: keyword.type.dafny
+    - match: \b(try|catch|finally|throw)\b
+      scope: keyword.control.catch-exception.java
+    - match: '\?|:'
+      scope: keyword.control.java
+    - match: (==|!=|<=|>=|<>|<|>)
+      scope: keyword.operator.comparison.java
+    - match: (:=)
+      scope: keyword.operator.assignment.java
+    - match: (\-\-|\+\+)
+      scope: keyword.operator.increment-decrement.java
+    - match: (\-|\+|\*|\/|%)
+      scope: keyword.operator.arithmetic.java
+    - match: (!|&&|\|\|)
+      scope: keyword.operator.logical.java
+    - match: (?<=\S)\.(?=\S)
+      scope: keyword.operator.dereference.java
+  parameters:
+    - match: <.+?>
+      scope: storage.type.dafny

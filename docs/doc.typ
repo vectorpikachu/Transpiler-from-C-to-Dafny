@@ -1,4 +1,8 @@
 #import "@preview/cuti:0.3.0": show-cn-fakebold
+#import "@preview/codly:1.2.0": *
+#import "@preview/codly-languages:0.1.1": *
+#import "@preview/tablem:0.1.0": tablem
+#show: codly-init.with()
 #show: show-cn-fakebold
 
 #let title = "A Transpiler from C to Dafny"
@@ -15,10 +19,17 @@
   margin: 1in,
   numbering: "1 / 1"
 )
+#set raw(syntaxes: ("./Dafny.sublime-syntax"))
 #show raw: set text(font: "Inconsolata", size: 12pt)
+
+
+
 #set heading(
   numbering: "1.1.1.1."
 )
+#show link: it => text(
+  fill: rgb("#0645AD"),
+)[#it]
 #align(center,
 [#block(text(size: 20pt, weight: "bold", title))
 #block(text(size: 14pt, author))
@@ -49,6 +60,32 @@ cargo run -- -i <input_file> -o <output_file>
 - `function_definition` 类型是函数定义. e.g. `function_definition: int main() { return 0; }`
 
 我为每个表达式手动标记了类型, 以试图捕捉 C 语言中的强制类型转换, 并将其转换为 Dafny 中的 `as` 操作符. 我们可以在打印的时候加上这些操作符.
+
+== Arrays
+
+关于数组: `seq<T>` 是 Dafny 中一个更加基本的类型, 而且虽然没有 `old` 操作符的支持, 但是我们可以通过下面的形式来模拟:
+```Dafny
+ghost var prevElements := a[..];
+while // ...
+  invariant a[lo..hi] == prevElements[lo..hi]
+{
+  // ...
+}
+```
+
+下面是 `Deepseek-R1` 给出的对比:
+#align(center, 
+  tablem(align: left)[
+  | *特性* | *`seq`（不可变序列）* | *`array`（可变数组）* |
+  |--------|---------------------|----------------------|
+  | *可变性* | 不可变 | 可变 |
+  | *验证复杂度* | 低（自动推理友好）| 高（需手动维护不变式）|
+  | *内置操作支持* | 丰富（切片、拼接等）| 基础（依赖索引访问）|
+  | *适用场景* | 数据无需修改或频繁生成新序列 | 需要高效地修改数据 |
+  | *验证性能* | 快（状态变化少）| 慢（需跟踪每一步修改）|
+  ]
+)
+
 
 = Soundness Proof
 
