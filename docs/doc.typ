@@ -10,7 +10,7 @@
 #let author = "VectorPikachu"
 #let date =  datetime.today().display("[month repr:long] [day], [year]")
 #set text(
-  lang: "zh",
+  lang: "en",
   font: ("Libertinus Serif", "SimSun"),
   region: "cn",
   size: 12pt,
@@ -98,3 +98,8 @@ Soundness定义为如果后者成立, 那么前者一定成立.
 + 现在假设 $p$ 中出现了 `int` 类型, 并且出现了 `int` 的溢出操作, 那么 $p$ 后面进行什么操作都是可以的, 因为这是一个UB, 所以 $c_2$ 无论如何都将成立, 所以我们可以直接把C语言中的 `int` 建模为Dafny中的 `int` 类型.
 + 如果 $p$ 中出现了 `unsigned char` 和 `unsigned int`, 他们的溢出操作是有定义的回绕, 所以必须是 `bv` 类型.
 
+#bibliography(
+  "./ref.bib",
+  style: "ieee",
+  full: true,
+)
