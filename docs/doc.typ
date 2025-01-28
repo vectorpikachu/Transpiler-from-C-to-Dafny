@@ -43,6 +43,11 @@ cargo run -- -i <input_file> -o <output_file>
 
 = Translation Details
 
+- `preproc_include` 类型是头文件
+- `preproc_function_def` 类型是宏中的函数定义. e.g. `preproc_function_def: #define assume(e) if(!(e)) exit(-1);`
+- `preproc_def` 类型是宏定义. e.g. `preproc_def: #define a (2)`
+- `function_definition` 类型是函数定义. e.g. `function_definition: int main() { return 0; }`
+
 我为每个表达式手动标记了类型, 以试图捕捉 C 语言中的强制类型转换, 并将其转换为 Dafny 中的 `as` 操作符. 我们可以在打印的时候加上这些操作符.
 
 = Soundness Proof
