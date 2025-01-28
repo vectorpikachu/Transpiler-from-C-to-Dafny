@@ -174,7 +174,7 @@ pub enum ShiftOp { Shl, Shr }
 pub enum AdditiveOp { Add, Sub }
 #[derive(Debug, Clone)]
 pub enum MultOp { Mul, Div, Mod }
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UnaryOp { Not, Neg, Old }
 
 #[derive(Debug, Clone)]

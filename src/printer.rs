@@ -233,6 +233,7 @@ impl DafnyPrinter {
             .join(", ")
     }
 
+    // TODO: I NEED TO ADD A TYPE TARGET HERE
     fn print_expr(expr: &Expr) -> String {
         match expr {
             Expr::LogicalOr(lhs, rhs, _) => {
@@ -275,6 +276,11 @@ impl DafnyPrinter {
                 )
             }
             Expr::Unary(op, expr, _) => {
+                if expr.get_type() != Type::Bool {
+                    if op == &UnaryOp::Not {
+                        return format!("{} == 0", Self::print_expr(expr));
+                    }
+                }
                 format!(
                     "({} {})",
                     match op {
@@ -300,6 +306,7 @@ impl DafnyPrinter {
             },
             Expr::Comparison(op, lhs, rhs, _) => match op {
                 ComparisonOp::Lt => {
+                    // TODO: Add Type Target here: what target i'm going to meet
                     format!("({} < {})", Self::print_expr(lhs), Self::print_expr(rhs))
                 }
                 ComparisonOp::Gt => {

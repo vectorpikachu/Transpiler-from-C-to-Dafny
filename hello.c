@@ -1,31 +1,32 @@
-// Source: data/benchmarks/LinearArbitrary-SeaHorn/loops/loops/terminator_02_true-unreach-call_true-termination.i.annot.c
+// Source: data/benchmarks/sv-benchmarks/loop-floats-scientific-comp/loop1-1.c
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 extern int unknown_int(void);
-extern _Bool unknown_bool(void);
 
 int main()
 {
-    int  x=unknown_int();
-    int y=unknown_int();
-    int  z=unknown_int();
-assume(x<100);
-assume(x>-100);
-assume(z<100);
-assume(z>-100);
-    while(x<100 && 100<z)
-    {
-        int  tmp=unknown_bool();
-        if(tmp){
-            x++;
-        } else {
-            x--;
-            z--;
-        }
-    }
-    {;
-//@ assert(x>=100 || z<=100);
+	float x = unknown_float() ;
+	assume(x > -1.0) ;
+	assume(x < 1.0) ;
+	float exp = 1.0 ;
+	float term = 1.0 ;
+	unsigned int count = 1 ;
+	float result = 2*(1/(1-x)) ;
+	int temp ;
+
+	while(1)
+	{
+		term = term * (x/count) ; 
+		exp = exp + term ;
+		count++ ;
+
+		temp = unknown_int() ;
+		if(temp ==0 ) break ;
+	}
+
+	{;
+//@ assert( result >= exp );
 }
 
-    return 0;
-}
+	return 0 ;
+}	

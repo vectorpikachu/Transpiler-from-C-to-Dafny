@@ -106,6 +106,10 @@ fn parse_type(node: &Node, context: &mut Context, source: &str) -> Option<Type> 
                 "int" => Some(Type::Int),
                 "unsigned int" => Some(Type::Bv(32)),
                 "unsigned char" => Some(Type::Bv(8)),
+                "_Bool" => Some(Type::Bool), // 处理 _Bool 类型
+                "bool" => Some(Type::Bool),
+                "unsigned short" => Some(Type::Bv(16)),
+                "float" => Some(Type::Real), // 处理 float 类型, float 的溢出也是一个 UB.
                 _ => {
                     // 处理其他类型
                     None
@@ -525,6 +529,106 @@ fn parse_assign_statement(node: &Node, context: &mut Context, source: &str) -> O
             context.lookup_var(&id_name).unwrap().clone(),
         ),
     };
+
+    let assign_op = node.child(1).unwrap().kind(); // =, +=, -=, *=, /=, %=, &=, |=, ^=, <<=, >>=
+    match assign_op {
+        "=" => {
+            return Some(Stmt::Assign(Assign {
+                lhs: Lhs::Identifier(id_name.to_string()),
+                expr: expr,
+            }));
+        }
+        "+=" => {
+            let ty = context.lookup_var(&id_name).unwrap().clone();
+            return Some(Stmt::Assign(Assign {
+                lhs: Lhs::Identifier(id_name.to_string()),
+                expr: Expr::Additive(
+                    AdditiveOp::Add,
+                    Box::new(Expr::Primary(
+                        PrimaryExpr::Identifier(id_name.to_string()),
+                        ty.clone(),
+                    )),
+                    Box::new(expr),
+                    ty.clone(),
+                ),
+            }));
+        }
+        "-=" => {
+            let ty = context.lookup_var(&id_name).unwrap().clone();
+            return Some(Stmt::Assign(Assign {
+                lhs: Lhs::Identifier(id_name.to_string()),
+                expr: Expr::Additive(
+                    AdditiveOp::Sub,
+                    Box::new(Expr::Primary(
+                        PrimaryExpr::Identifier(id_name.to_string()),
+                        ty.clone(),
+                    )),
+                    Box::new(expr),
+                    ty.clone(),
+                ),
+            }));
+        }
+        "*=" => {
+            let ty = context.lookup_var(&id_name).unwrap().clone();
+            return Some(Stmt::Assign(Assign {
+                lhs: Lhs::Identifier(id_name.to_string()),
+                expr: Expr::Mult(
+                    MultOp::Mul,
+                    Box::new(Expr::Primary(
+                        PrimaryExpr::Identifier(id_name.to_string()),
+                        ty.clone(),
+                    )),
+                    Box::new(expr),
+                    ty.clone(),
+                ),
+            }));
+        }
+        "/=" => {
+            let ty = context.lookup_var(&id_name).unwrap().clone();
+            return Some(Stmt::Assign(Assign {
+                lhs: Lhs::Identifier(id_name.to_string()),
+                expr: Expr::Mult(
+                    MultOp::Div,
+                    Box::new(Expr::Primary(
+                        PrimaryExpr::Identifier(id_name.to_string()),
+                        ty.clone(),
+                    )),
+                    Box::new(expr),
+                    ty.clone(),
+                ),
+            }));
+        }
+        "%=" => {
+            let ty = context.lookup_var(&id_name).unwrap().clone();
+            return Some(Stmt::Assign(Assign {
+                lhs: Lhs::Identifier(id_name.to_string()),
+                expr: Expr::Mult(
+                    MultOp::Mod,
+                    Box::new(Expr::Primary(
+                        PrimaryExpr::Identifier(id_name.to_string()),
+                        ty.clone(),
+                    )),
+                    Box::new(expr),
+                    ty.clone(),
+                ),
+            }));
+        }
+        "&=" => {
+            let ty = context.lookup_var(&id_name).unwrap().clone();
+            return Some(Stmt::Assign(Assign {
+                lhs: Lhs::Identifier(id_name.to_string()),
+                expr: Expr::BitwiseAnd(
+                    Box::new(Expr::Primary(
+                        PrimaryExpr::Identifier(id_name.to_string()),
+                        ty.clone(),
+                    )),
+                    Box::new(expr),
+                    ty.clone(),
+                ),
+            }));
+        }
+        _ => {}
+    } 
 
     Some(Stmt::Assign(Assign {
         lhs: Lhs::Identifier(id_name.to_string()),
@@ -1045,7 +1149,12 @@ fn parse_call_expr(node: &Node, context: &mut Context, source: &str) -> Option<E
     if func_name == "unknown_int" 
         || func_name == "unknown" 
         || func_name == "unknown_uint"
-        || func_name == "unknown_bool" {
+        || func_name == "unknown_bool" 
+        || func_name == "unknown1"
+        || func_name == "unknown2"
+        || func_name == "unknown3"
+        || func_name == "unknown_ushort"
+        || func_name == "unknown_float" {
         return Some(Expr::Primary(PrimaryExpr::Literal(Literal::Star), Type::Star));
     }
 
