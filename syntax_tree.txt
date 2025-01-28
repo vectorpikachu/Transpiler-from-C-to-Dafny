@@ -1,31 +1,36 @@
 Syntax tree:
-translation_unit: // Source: data/benchmarks/accelerating_invariant_generation/svcomp/sum04_true.c
+translation_unit: // Source: data/benchmarks/LinearArbitrary-SeaHorn/loops/loops/terminator_02_true-unreach-call_true-termination.i.annot.c
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
+extern int unknown_int(void);
+extern _Bool unknown_bool(void);
 
-#define a (2)
-#define SIZE 8
-int main() { 
-  int i=0, sn=0;
-
-  int zz;
-
-  int aer[100] = {0};
-
-  int tt = aer[2];
-
-  aer[3] = tt;
-
-  for(int z = 5; i<=SIZE; i+1, i++) {
-    sn = sn + a;
-  }
-  {;
- assert(sn==SIZE*a || sn == 0);
+int main()
+{
+    int  x=unknown_int();
+    int y=unknown_int();
+    int  z=unknown_int();
+assume(x<100);
+assume(x>-100);
+assume(z<100);
+assume(z>-100);
+    while(x<100 && 100<z)
+    {
+        int  tmp=unknown_bool();
+        if(tmp){
+            x++;
+        } else {
+            x--;
+            z--;
+        }
+    }
+    {;
+ assert(x>=100 || z<=100);
 }
 
-}
- (1:1 - 26:1)
-  comment: // Source: data/benchmarks/accelerating_invariant_generation/svcomp/sum04_true.c (1:1 - 1:82)
+    return 0;
+} (1:1 - 31:2)
+  comment: // Source: data/benchmarks/LinearArbitrary-SeaHorn/loops/loops/terminator_02_true-unreach-call_true-termination.i.annot.c (1:1 - 1:123)
   preproc_include: #include <stdlib.h>
  (2:1 - 3:1)
     #include: #include (2:1 - 2:9)
@@ -39,178 +44,277 @@ int main() {
       identifier: e (3:16 - 3:17)
       ): ) (3:17 - 3:18)
     preproc_arg: if(!(e)) exit(-1); (3:19 - 3:38)
-  preproc_def: #define a (2)
- (5:1 - 6:1)
-    #define: #define (5:1 - 5:8)
-    identifier: a (5:9 - 5:10)
-    preproc_arg: (2) (5:11 - 5:15)
-  preproc_def: #define SIZE 8
- (6:1 - 7:1)
-    #define: #define (6:1 - 6:8)
-    identifier: SIZE (6:9 - 6:13)
-    preproc_arg: 8 (6:14 - 6:16)
-  function_definition: int main() { 
-  int i=0, sn=0;
-
-  int zz;
-
-  int aer[100] = {0};
-
-  int tt = aer[2];
-
-  aer[3] = tt;
-
-  for(int z = 5; i<=SIZE; i+1, i++) {
-    sn = sn + a;
-  }
-  {;
- assert(sn==SIZE*a || sn == 0);
+  declaration: extern int unknown_int(void); (4:1 - 4:30)
+    storage_class_specifier: extern (4:1 - 4:7)
+      extern: extern (4:1 - 4:7)
+    primitive_type: int (4:8 - 4:11)
+    function_declarator: unknown_int(void) (4:12 - 4:29)
+      identifier: unknown_int (4:12 - 4:23)
+      parameter_list: (void) (4:23 - 4:29)
+        (: ( (4:23 - 4:24)
+        parameter_declaration: void (4:24 - 4:28)
+          primitive_type: void (4:24 - 4:28)
+        ): ) (4:28 - 4:29)
+    ;: ; (4:29 - 4:30)
+  declaration: extern _Bool unknown_bool(void); (5:1 - 5:33)
+    storage_class_specifier: extern (5:1 - 5:7)
+      extern: extern (5:1 - 5:7)
+    type_identifier: _Bool (5:8 - 5:13)
+    function_declarator: unknown_bool(void) (5:14 - 5:32)
+      identifier: unknown_bool (5:14 - 5:26)
+      parameter_list: (void) (5:26 - 5:32)
+        (: ( (5:26 - 5:27)
+        parameter_declaration: void (5:27 - 5:31)
+          primitive_type: void (5:27 - 5:31)
+        ): ) (5:31 - 5:32)
+    ;: ; (5:32 - 5:33)
+  function_definition: int main()
+{
+    int  x=unknown_int();
+    int y=unknown_int();
+    int  z=unknown_int();
+assume(x<100);
+assume(x>-100);
+assume(z<100);
+assume(z>-100);
+    while(x<100 && 100<z)
+    {
+        int  tmp=unknown_bool();
+        if(tmp){
+            x++;
+        } else {
+            x--;
+            z--;
+        }
+    }
+    {;
+ assert(x>=100 || z<=100);
 }
 
-} (7:1 - 25:2)
+    return 0;
+} (7:1 - 31:2)
     primitive_type: int (7:1 - 7:4)
     function_declarator: main() (7:5 - 7:11)
       identifier: main (7:5 - 7:9)
       parameter_list: () (7:9 - 7:11)
         (: ( (7:9 - 7:10)
         ): ) (7:10 - 7:11)
-    compound_statement: { 
-  int i=0, sn=0;
-
-  int zz;
-
-  int aer[100] = {0};
-
-  int tt = aer[2];
-
-  aer[3] = tt;
-
-  for(int z = 5; i<=SIZE; i+1, i++) {
-    sn = sn + a;
-  }
-  {;
- assert(sn==SIZE*a || sn == 0);
+    compound_statement: {
+    int  x=unknown_int();
+    int y=unknown_int();
+    int  z=unknown_int();
+assume(x<100);
+assume(x>-100);
+assume(z<100);
+assume(z>-100);
+    while(x<100 && 100<z)
+    {
+        int  tmp=unknown_bool();
+        if(tmp){
+            x++;
+        } else {
+            x--;
+            z--;
+        }
+    }
+    {;
+ assert(x>=100 || z<=100);
 }
 
-} (7:12 - 25:2)
-      {: { (7:12 - 7:13)
-      declaration: int i=0, sn=0; (8:3 - 8:17)
-        primitive_type: int (8:3 - 8:6)
-        init_declarator: i=0 (8:7 - 8:10)
-          identifier: i (8:7 - 8:8)
-          =: = (8:8 - 8:9)
-          number_literal: 0 (8:9 - 8:10)
-        ,: , (8:10 - 8:11)
-        init_declarator: sn=0 (8:12 - 8:16)
-          identifier: sn (8:12 - 8:14)
-          =: = (8:14 - 8:15)
-          number_literal: 0 (8:15 - 8:16)
-        ;: ; (8:16 - 8:17)
-      declaration: int zz; (10:3 - 10:10)
-        primitive_type: int (10:3 - 10:6)
-        identifier: zz (10:7 - 10:9)
-        ;: ; (10:9 - 10:10)
-      declaration: int aer[100] = {0}; (12:3 - 12:22)
-        primitive_type: int (12:3 - 12:6)
-        init_declarator: aer[100] = {0} (12:7 - 12:21)
-          array_declarator: aer[100] (12:7 - 12:15)
-            identifier: aer (12:7 - 12:10)
-            [: [ (12:10 - 12:11)
-            number_literal: 100 (12:11 - 12:14)
-            ]: ] (12:14 - 12:15)
-          =: = (12:16 - 12:17)
-          initializer_list: {0} (12:18 - 12:21)
-            {: { (12:18 - 12:19)
-            number_literal: 0 (12:19 - 12:20)
-            }: } (12:20 - 12:21)
-        ;: ; (12:21 - 12:22)
-      declaration: int tt = aer[2]; (14:3 - 14:19)
-        primitive_type: int (14:3 - 14:6)
-        init_declarator: tt = aer[2] (14:7 - 14:18)
-          identifier: tt (14:7 - 14:9)
-          =: = (14:10 - 14:11)
-          subscript_expression: aer[2] (14:12 - 14:18)
-            identifier: aer (14:12 - 14:15)
-            [: [ (14:15 - 14:16)
-            number_literal: 2 (14:16 - 14:17)
-            ]: ] (14:17 - 14:18)
-        ;: ; (14:18 - 14:19)
-      expression_statement: aer[3] = tt; (16:3 - 16:15)
-        assignment_expression: aer[3] = tt (16:3 - 16:14)
-          subscript_expression: aer[3] (16:3 - 16:9)
-            identifier: aer (16:3 - 16:6)
-            [: [ (16:6 - 16:7)
-            number_literal: 3 (16:7 - 16:8)
-            ]: ] (16:8 - 16:9)
-          =: = (16:10 - 16:11)
-          identifier: tt (16:12 - 16:14)
-        ;: ; (16:14 - 16:15)
-      for_statement: for(int z = 5; i<=SIZE; i+1, i++) {
-    sn = sn + a;
-  } (18:3 - 20:4)
-        for: for (18:3 - 18:6)
-        (: ( (18:6 - 18:7)
-        declaration: int z = 5; (18:7 - 18:17)
-          primitive_type: int (18:7 - 18:10)
-          init_declarator: z = 5 (18:11 - 18:16)
-            identifier: z (18:11 - 18:12)
-            =: = (18:13 - 18:14)
-            number_literal: 5 (18:15 - 18:16)
-          ;: ; (18:16 - 18:17)
-        binary_expression: i<=SIZE (18:18 - 18:25)
-          identifier: i (18:18 - 18:19)
-          <=: <= (18:19 - 18:21)
-          identifier: SIZE (18:21 - 18:25)
-        ;: ; (18:25 - 18:26)
-        comma_expression: i+1, i++ (18:27 - 18:35)
-          binary_expression: i+1 (18:27 - 18:30)
-            identifier: i (18:27 - 18:28)
-            +: + (18:28 - 18:29)
-            number_literal: 1 (18:29 - 18:30)
-          ,: , (18:30 - 18:31)
-          update_expression: i++ (18:32 - 18:35)
-            identifier: i (18:32 - 18:33)
-            ++: ++ (18:33 - 18:35)
-        ): ) (18:35 - 18:36)
+    return 0;
+} (8:1 - 31:2)
+      {: { (8:1 - 8:2)
+      declaration: int  x=unknown_int(); (9:5 - 9:26)
+        primitive_type: int (9:5 - 9:8)
+        init_declarator: x=unknown_int() (9:10 - 9:25)
+          identifier: x (9:10 - 9:11)
+          =: = (9:11 - 9:12)
+          call_expression: unknown_int() (9:12 - 9:25)
+            identifier: unknown_int (9:12 - 9:23)
+            argument_list: () (9:23 - 9:25)
+              (: ( (9:23 - 9:24)
+              ): ) (9:24 - 9:25)
+        ;: ; (9:25 - 9:26)
+      declaration: int y=unknown_int(); (10:5 - 10:25)
+        primitive_type: int (10:5 - 10:8)
+        init_declarator: y=unknown_int() (10:9 - 10:24)
+          identifier: y (10:9 - 10:10)
+          =: = (10:10 - 10:11)
+          call_expression: unknown_int() (10:11 - 10:24)
+            identifier: unknown_int (10:11 - 10:22)
+            argument_list: () (10:22 - 10:24)
+              (: ( (10:22 - 10:23)
+              ): ) (10:23 - 10:24)
+        ;: ; (10:24 - 10:25)
+      declaration: int  z=unknown_int(); (11:5 - 11:26)
+        primitive_type: int (11:5 - 11:8)
+        init_declarator: z=unknown_int() (11:10 - 11:25)
+          identifier: z (11:10 - 11:11)
+          =: = (11:11 - 11:12)
+          call_expression: unknown_int() (11:12 - 11:25)
+            identifier: unknown_int (11:12 - 11:23)
+            argument_list: () (11:23 - 11:25)
+              (: ( (11:23 - 11:24)
+              ): ) (11:24 - 11:25)
+        ;: ; (11:25 - 11:26)
+      expression_statement: assume(x<100); (12:1 - 12:15)
+        call_expression: assume(x<100) (12:1 - 12:14)
+          identifier: assume (12:1 - 12:7)
+          argument_list: (x<100) (12:7 - 12:14)
+            (: ( (12:7 - 12:8)
+            binary_expression: x<100 (12:8 - 12:13)
+              identifier: x (12:8 - 12:9)
+              <: < (12:9 - 12:10)
+              number_literal: 100 (12:10 - 12:13)
+            ): ) (12:13 - 12:14)
+        ;: ; (12:14 - 12:15)
+      expression_statement: assume(x>-100); (13:1 - 13:16)
+        call_expression: assume(x>-100) (13:1 - 13:15)
+          identifier: assume (13:1 - 13:7)
+          argument_list: (x>-100) (13:7 - 13:15)
+            (: ( (13:7 - 13:8)
+            binary_expression: x>-100 (13:8 - 13:14)
+              identifier: x (13:8 - 13:9)
+              >: > (13:9 - 13:10)
+              number_literal: -100 (13:10 - 13:14)
+            ): ) (13:14 - 13:15)
+        ;: ; (13:15 - 13:16)
+      expression_statement: assume(z<100); (14:1 - 14:15)
+        call_expression: assume(z<100) (14:1 - 14:14)
+          identifier: assume (14:1 - 14:7)
+          argument_list: (z<100) (14:7 - 14:14)
+            (: ( (14:7 - 14:8)
+            binary_expression: z<100 (14:8 - 14:13)
+              identifier: z (14:8 - 14:9)
+              <: < (14:9 - 14:10)
+              number_literal: 100 (14:10 - 14:13)
+            ): ) (14:13 - 14:14)
+        ;: ; (14:14 - 14:15)
+      expression_statement: assume(z>-100); (15:1 - 15:16)
+        call_expression: assume(z>-100) (15:1 - 15:15)
+          identifier: assume (15:1 - 15:7)
+          argument_list: (z>-100) (15:7 - 15:15)
+            (: ( (15:7 - 15:8)
+            binary_expression: z>-100 (15:8 - 15:14)
+              identifier: z (15:8 - 15:9)
+              >: > (15:9 - 15:10)
+              number_literal: -100 (15:10 - 15:14)
+            ): ) (15:14 - 15:15)
+        ;: ; (15:15 - 15:16)
+      while_statement: while(x<100 && 100<z)
+    {
+        int  tmp=unknown_bool();
+        if(tmp){
+            x++;
+        } else {
+            x--;
+            z--;
+        }
+    } (16:5 - 25:6)
+        while: while (16:5 - 16:10)
+        parenthesized_expression: (x<100 && 100<z) (16:10 - 16:26)
+          (: ( (16:10 - 16:11)
+          binary_expression: x<100 && 100<z (16:11 - 16:25)
+            binary_expression: x<100 (16:11 - 16:16)
+              identifier: x (16:11 - 16:12)
+              <: < (16:12 - 16:13)
+              number_literal: 100 (16:13 - 16:16)
+            &&: && (16:17 - 16:19)
+            binary_expression: 100<z (16:20 - 16:25)
+              number_literal: 100 (16:20 - 16:23)
+              <: < (16:23 - 16:24)
+              identifier: z (16:24 - 16:25)
+          ): ) (16:25 - 16:26)
         compound_statement: {
-    sn = sn + a;
-  } (18:37 - 20:4)
-          {: { (18:37 - 18:38)
-          expression_statement: sn = sn + a; (19:5 - 19:17)
-            assignment_expression: sn = sn + a (19:5 - 19:16)
-              identifier: sn (19:5 - 19:7)
-              =: = (19:8 - 19:9)
-              binary_expression: sn + a (19:10 - 19:16)
-                identifier: sn (19:10 - 19:12)
-                +: + (19:13 - 19:14)
-                identifier: a (19:15 - 19:16)
-            ;: ; (19:16 - 19:17)
-          }: } (20:3 - 20:4)
+        int  tmp=unknown_bool();
+        if(tmp){
+            x++;
+        } else {
+            x--;
+            z--;
+        }
+    } (17:5 - 25:6)
+          {: { (17:5 - 17:6)
+          declaration: int  tmp=unknown_bool(); (18:9 - 18:33)
+            primitive_type: int (18:9 - 18:12)
+            init_declarator: tmp=unknown_bool() (18:14 - 18:32)
+              identifier: tmp (18:14 - 18:17)
+              =: = (18:17 - 18:18)
+              call_expression: unknown_bool() (18:18 - 18:32)
+                identifier: unknown_bool (18:18 - 18:30)
+                argument_list: () (18:30 - 18:32)
+                  (: ( (18:30 - 18:31)
+                  ): ) (18:31 - 18:32)
+            ;: ; (18:32 - 18:33)
+          if_statement: if(tmp){
+            x++;
+        } else {
+            x--;
+            z--;
+        } (19:9 - 24:10)
+            if: if (19:9 - 19:11)
+            parenthesized_expression: (tmp) (19:11 - 19:16)
+              (: ( (19:11 - 19:12)
+              identifier: tmp (19:12 - 19:15)
+              ): ) (19:15 - 19:16)
+            compound_statement: {
+            x++;
+        } (19:16 - 21:10)
+              {: { (19:16 - 19:17)
+              expression_statement: x++; (20:13 - 20:17)
+                update_expression: x++ (20:13 - 20:16)
+                  identifier: x (20:13 - 20:14)
+                  ++: ++ (20:14 - 20:16)
+                ;: ; (20:16 - 20:17)
+              }: } (21:9 - 21:10)
+            else_clause: else {
+            x--;
+            z--;
+        } (21:11 - 24:10)
+              else: else (21:11 - 21:15)
+              compound_statement: {
+            x--;
+            z--;
+        } (21:16 - 24:10)
+                {: { (21:16 - 21:17)
+                expression_statement: x--; (22:13 - 22:17)
+                  update_expression: x-- (22:13 - 22:16)
+                    identifier: x (22:13 - 22:14)
+                    --: -- (22:14 - 22:16)
+                  ;: ; (22:16 - 22:17)
+                expression_statement: z--; (23:13 - 23:17)
+                  update_expression: z-- (23:13 - 23:16)
+                    identifier: z (23:13 - 23:14)
+                    --: -- (23:14 - 23:16)
+                  ;: ; (23:16 - 23:17)
+                }: } (24:9 - 24:10)
+          }: } (25:5 - 25:6)
       compound_statement: {;
- assert(sn==SIZE*a || sn == 0);
-} (21:3 - 23:2)
-        {: { (21:3 - 21:4)
-        expression_statement: ; (21:4 - 21:5)
-          ;: ; (21:4 - 21:5)
-        expression_statement: assert(sn==SIZE*a || sn == 0); (22:2 - 22:32)
-          call_expression: assert(sn==SIZE*a || sn == 0) (22:2 - 22:31)
-            identifier: assert (22:2 - 22:8)
-            argument_list: (sn==SIZE*a || sn == 0) (22:8 - 22:31)
-              (: ( (22:8 - 22:9)
-              binary_expression: sn==SIZE*a || sn == 0 (22:9 - 22:30)
-                binary_expression: sn==SIZE*a (22:9 - 22:19)
-                  identifier: sn (22:9 - 22:11)
-                  ==: == (22:11 - 22:13)
-                  binary_expression: SIZE*a (22:13 - 22:19)
-                    identifier: SIZE (22:13 - 22:17)
-                    *: * (22:17 - 22:18)
-                    identifier: a (22:18 - 22:19)
-                ||: || (22:20 - 22:22)
-                binary_expression: sn == 0 (22:23 - 22:30)
-                  identifier: sn (22:23 - 22:25)
-                  ==: == (22:26 - 22:28)
-                  number_literal: 0 (22:29 - 22:30)
-              ): ) (22:30 - 22:31)
-          ;: ; (22:31 - 22:32)
-        }: } (23:1 - 23:2)
-      }: } (25:1 - 25:2)
+ assert(x>=100 || z<=100);
+} (26:5 - 28:2)
+        {: { (26:5 - 26:6)
+        expression_statement: ; (26:6 - 26:7)
+          ;: ; (26:6 - 26:7)
+        expression_statement: assert(x>=100 || z<=100); (27:2 - 27:27)
+          call_expression: assert(x>=100 || z<=100) (27:2 - 27:26)
+            identifier: assert (27:2 - 27:8)
+            argument_list: (x>=100 || z<=100) (27:8 - 27:26)
+              (: ( (27:8 - 27:9)
+              binary_expression: x>=100 || z<=100 (27:9 - 27:25)
+                binary_expression: x>=100 (27:9 - 27:15)
+                  identifier: x (27:9 - 27:10)
+                  >=: >= (27:10 - 27:12)
+                  number_literal: 100 (27:12 - 27:15)
+                ||: || (27:16 - 27:18)
+                binary_expression: z<=100 (27:19 - 27:25)
+                  identifier: z (27:19 - 27:20)
+                  <=: <= (27:20 - 27:22)
+                  number_literal: 100 (27:22 - 27:25)
+              ): ) (27:25 - 27:26)
+          ;: ; (27:26 - 27:27)
+        }: } (28:1 - 28:2)
+      return_statement: return 0; (30:5 - 30:14)
+        return: return (30:5 - 30:11)
+        number_literal: 0 (30:12 - 30:13)
+        ;: ; (30:13 - 30:14)
+      }: } (31:1 - 31:2)

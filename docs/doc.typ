@@ -74,61 +74,16 @@ while // ...
 {
   // ...
 }
+
+// The above is equivalent to:
+while // ...
+  invariant a[lo..hi] == old(a[lo..hi])
+{
+  // ...
+}
 ```
 
-下面是 `Deepseek-R1` 给出的对比:
-#align(center, 
-  tablem(align: left)[
-  | *特性* | *`seq`（不可变序列）* | *`array`（可变数组）* |
-  |--------|---------------------|----------------------|
-  | *可变性* | 不可变 | 可变 |
-  | *验证复杂度* | 低（自动推理友好）| 高（需手动维护不变式）|
-  | *内置操作支持* | 丰富（切片、拼接等）| 基础（依赖索引访问）|
-  | *适用场景* | 数据无需修改或频繁生成新序列 | 需要高效地修改数据 |
-  | *验证性能* | 快（状态变化少）| 慢（需跟踪每一步修改）|
-  ]
-)
-
-下面是 `GPT-4o` 给出的对比:
-
-#align(center, 
-  tablem(align: left)[
-    | 特性 | `seq`  | `array`|
-    | ----| ---- | ---- |
-    | *可变性* | 不可变，适合函数式编程和数学证明 | 可变，适合实际程序设计和性能优化 |
-    | *抽象层次* | 高层次，贴近数学概念 | 低层次，贴近底层实现 |
-    | *性能* | 操作产生新序列，开销较高 | 原地更新，性能更高 |
-    | *证明难度* | 不需要管理状态，证明更简单 | 需要处理状态变化，证明复杂 |
-    | *适用场景* | 形式化证明、不可变数据的操作 | 高性能计算、频繁修改数据的程序 |
-  ]
-)
-
-综上所述, 我决定使用 `seq` 类型来模拟数组.
-
-在 #link("https://dafny.org/dafny/DafnyRef/out/DafnyRef.pdf")[Dafny Reference Manual] 中, 我们可以看到 `seq` 类型的一些使用:
-#align(center, 
-  tablex(
-    columns: (auto, 1fr, auto),
-    align: left + horizon,
-    auto-vlines: false,
-    [*operator or expression*], [*result type*], [*description*],
-    [`<`], [`bool`], [proper prefix],
-    [`<=`], [`bool`], [prefix],
-    [`+`], [`seq<T>`], [concatenation],
-    [`|s|`], [`nat`], [sequence length],
-    [`s[i]`], [`T`], [sequence selection],
-    [`s[i := e]`], [`seq<T>`], [sequence update],
-    [`e in s`], [`bool`], [sequence membership],
-    [`e !in s`], [`bool`], [sequence non-membership],
-    [`s[lo..hi]`], [`seq<T>`], [subsequence],
-    [`s[lo..]`], [`seq<T>`], [drop],
-    [`s[..hi]`], [`seq<T>`], [take],
-    [`s[`_slices_`]`], [`seq<seq<T>>`], [slice],
-    [`multiset(s)`], [`multiset<T>`], [sequence conversion to a `multiset<T>`]
-  )
-)
-
-我需要重新改造我的 ast 设计.
+但是 C 语言代码需要 update 一个数组, 这方面来看还是 `array<T>` 更合适, 所以我们选择使用 `array<T>`.
 
 = Soundness Proof
 

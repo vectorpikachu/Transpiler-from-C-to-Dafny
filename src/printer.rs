@@ -457,7 +457,12 @@ impl DafnyPrinter {
     }
 
     fn print_if_else(if_else: &IfElse, indent_level: usize) -> String {
-        let mut result = format!("if {} {{\n", Self::print_expr(&if_else.cond));
+        let mut result = format!("if {} ", Self::print_expr(&if_else.cond));
+        if if_else.cond.get_type() != Type::Bool {
+            // ? A Simple Type Conversion Here
+            result.push_str("!= 0 ");
+        }
+        result.push_str("{\n");
         result.push_str(&Self::print_block(&if_else.then_block, indent_level + 1));
         result.push_str(&Self::indent(indent_level));
         result.push('}');

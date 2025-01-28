@@ -5,7 +5,7 @@ use crate::dafny_ast::*;
 #[derive(Debug, Clone)]
 pub struct Context {
     tmp_var_gen: TempVarGenerator,
-    current_method: Option<String>,
+    current_method: Option<MethodDecl>,
     scope_stack: Vec<HashMap<String, Type>>, // include all the methods
     macros: HashMap<String, (String, Type)>, // the identifier and the macro string
 }
@@ -20,8 +20,8 @@ impl Context {
         }
     }
 
-    pub fn enter_method(&mut self, method_name: String) {
-        self.current_method = Some(method_name);
+    pub fn enter_method(&mut self, method: MethodDecl) {
+        self.current_method = Some(method);
     }
 
     pub fn exit_method(&mut self) {
@@ -32,11 +32,11 @@ impl Context {
         self.tmp_var_gen.next()
     }
 
-    pub fn get_current_method(&self) -> Option<&String> {
+    pub fn get_current_method(&self) -> Option<&MethodDecl> {
         self.current_method.as_ref()
     }
 
-    pub fn get_current_method_mut(&mut self) -> Option<&mut String> {
+    pub fn get_current_method_mut(&mut self) -> Option<&mut MethodDecl> {
         self.current_method.as_mut()
     }
 

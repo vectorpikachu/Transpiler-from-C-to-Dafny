@@ -128,6 +128,18 @@ fn parse_function(node: &Node, context: &mut Context, source: &str) -> Option<Me
     // 必须要有函数体
     let func_body = node.child_by_field_name("body")?;
     let mut stmts = vec![];
+    let method_decl = MethodDecl {
+        id: func_name.clone().unwrap(),
+        params: func_params.clone(),
+        returns: vec![],
+        return_type: func_type.clone(),
+        requires: vec![],
+        ensures: vec![],
+        modifies: vec![],
+        decreases: vec![],
+        block: Block { stmts: vec![] },
+    };
+    context.enter_method(method_decl.clone());
     for child in func_body.children(&mut func_body.walk()) {
         let stmt = parse_stmt(&child, context, source);
         if stmt.is_none() {
@@ -172,18 +184,23 @@ fn parse_function(node: &Node, context: &mut Context, source: &str) -> Option<Me
 
     let modify_expr = Expr::Primary(PrimaryExpr::Literal(Literal::This), Type::This);
     let decrease_expr = Expr::Primary(PrimaryExpr::Literal(Literal::Star), Type::Star);
+    let requires_expr = if func_name.clone().unwrap() == "errorFn" {
+        Expr::Primary(PrimaryExpr::Literal(Literal::Boolean(false)), Type::Bool)
+    } else {
+        Expr::Primary(PrimaryExpr::Literal(Literal::Boolean(true)), Type::Bool)
+    };
     let method_decl = MethodDecl {
         id: func_name.unwrap(),
         params: func_params,
         returns: returns,
         return_type: func_type,
-        requires: vec![],
+        requires: vec![requires_expr],
         ensures: vec![],
         modifies: vec![modify_expr],
         decreases: vec![decrease_expr],
         block: Block { stmts },
     };
-
+    context.exit_method();
     Some(method_decl)
 }
 
@@ -286,6 +303,22 @@ fn parse_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<St
                 }
                 "LOOPEND" => {
                     stmt.push(Stmt::Break);
+                }
+                "END" => {
+                    let method = context.get_current_method().unwrap();
+                    let return_type = method.return_type.clone();
+                    match return_type {
+                        Some(t) => {
+                            // TODO: further processing
+                            stmt.push(Stmt::Return(Some(Expr::Primary(
+                                PrimaryExpr::Literal(Literal::Integer("0".to_string())),
+                                t,
+                            ))));
+                        }
+                        None => {
+                            stmt.push(Stmt::Return(None));
+                        }
+                    }
                 }
                 _ => {}
             }
@@ -651,10 +684,15 @@ fn parse_for_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Ve
     }
 
     body.extend(update_stmt);
+    let cond = if cond.is_empty() {
+        Expr::Primary(PrimaryExpr::Literal(Literal::Boolean(true)), Type::Bool)
+    } else {
+        cond[0].clone()
+    };
 
     let for_stmt = Stmt::WhileLoop(
         WhileLoop { 
-            cond: cond[0].clone(),
+            cond: cond,
             invariants: vec![],
             decreases: vec![Expr::Primary(
                 PrimaryExpr::Literal(Literal::Star),
@@ -685,21 +723,29 @@ fn parse_if_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec
     } else {
         None
     };
-
-    if cond.is_some() && then_body.is_some() {
-        let if_stmt = Stmt::IfElse(IfElse {
-            cond: cond.unwrap(),
-            then_block: Block {
-                stmts: then_body.unwrap(),
-            },
-            else_block: match else_body {
-                Some(else_body) => Some(Block { stmts: else_body }),
-                None => None,
-            },
-        });
-        return Some(vec![if_stmt]);
-    }
-    None
+    let cond = match cond {
+        Some(cond) => cond,
+        None => {
+            Expr::Primary(PrimaryExpr::Literal(Literal::Boolean(true)), Type::Bool)
+        }
+    };
+    let then_body = match then_body {
+        Some(then_body) => then_body,
+        None => {
+            vec![]
+        }
+    };
+    let if_stmt = Stmt::IfElse(IfElse {
+        cond: cond,
+        then_block: Block {
+            stmts: then_body,
+        },
+        else_block: match else_body {
+            Some(else_body) => Some(Block { stmts: else_body }),
+            None => None,
+        },
+    });
+    Some(vec![if_stmt])
 }
 
 fn parse_compound_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
@@ -845,6 +891,14 @@ fn parse_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> 
                 }
             }
         }
+        "false" => Some(Expr::Primary(
+            PrimaryExpr::Literal(Literal::Boolean(false)),
+            Type::Bool,
+        )),
+        "true" => Some(Expr::Primary(
+            PrimaryExpr::Literal(Literal::Boolean(true)),
+            Type::Bool,
+        )),
         _ => {
             // TODO: Parse other expressions
             None
@@ -988,13 +1042,19 @@ fn parse_call_expr(node: &Node, context: &mut Context, source: &str) -> Option<E
     }
     let func_name = func_name.utf8_text(source.as_bytes()).unwrap();
 
-    if func_name == "unknown_int" || func_name == "unknown" {
+    if func_name == "unknown_int" 
+        || func_name == "unknown" 
+        || func_name == "unknown_uint"
+        || func_name == "unknown_bool" {
         return Some(Expr::Primary(PrimaryExpr::Literal(Literal::Star), Type::Star));
     }
 
     if func_name == "assume" {
         return None;
     }
+    let func_ty = context.lookup_var(func_name);
+    println!("我的函数不可能是: {:?} func_ty: {:?}", func_name, func_ty);
+
 
     let func_ty = context.lookup_var(func_name).unwrap().clone();
 
