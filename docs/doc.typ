@@ -2,6 +2,7 @@
 #import "@preview/codly:1.2.0": *
 #import "@preview/codly-languages:0.1.1": *
 #import "@preview/tablem:0.1.0": tablem
+#import "@preview/tablex:0.0.9": tablex
 #show: codly-init.with()
 #show: show-cn-fakebold
 
@@ -54,6 +55,8 @@ cargo run -- -i <input_file> -o <output_file>
 
 = Translation Details
 
+我提供了一个 ```rust traverse_tree()```, 它可以遍历语法树并打印出每个节点的类型. 我们可以通过这个函数来查看语法树的结构.
+
 - `preproc_include` 类型是头文件
 - `preproc_function_def` 类型是宏中的函数定义. e.g. `preproc_function_def: #define assume(e) if(!(e)) exit(-1);`
 - `preproc_def` 类型是宏定义. e.g. `preproc_def: #define a (2)`
@@ -86,6 +89,46 @@ while // ...
   ]
 )
 
+下面是 `GPT-4o` 给出的对比:
+
+#align(center, 
+  tablem(align: left)[
+    | 特性 | `seq`  | `array`|
+    | ----| ---- | ---- |
+    | *可变性* | 不可变，适合函数式编程和数学证明 | 可变，适合实际程序设计和性能优化 |
+    | *抽象层次* | 高层次，贴近数学概念 | 低层次，贴近底层实现 |
+    | *性能* | 操作产生新序列，开销较高 | 原地更新，性能更高 |
+    | *证明难度* | 不需要管理状态，证明更简单 | 需要处理状态变化，证明复杂 |
+    | *适用场景* | 形式化证明、不可变数据的操作 | 高性能计算、频繁修改数据的程序 |
+  ]
+)
+
+综上所述, 我决定使用 `seq` 类型来模拟数组.
+
+在 #link("https://dafny.org/dafny/DafnyRef/out/DafnyRef.pdf")[Dafny Reference Manual] 中, 我们可以看到 `seq` 类型的一些使用:
+#align(center, 
+  tablex(
+    columns: (auto, 1fr, auto),
+    align: left + horizon,
+    auto-vlines: false,
+    [*operator or expression*], [*result type*], [*description*],
+    [`<`], [`bool`], [proper prefix],
+    [`<=`], [`bool`], [prefix],
+    [`+`], [`seq<T>`], [concatenation],
+    [`|s|`], [`nat`], [sequence length],
+    [`s[i]`], [`T`], [sequence selection],
+    [`s[i := e]`], [`seq<T>`], [sequence update],
+    [`e in s`], [`bool`], [sequence membership],
+    [`e !in s`], [`bool`], [sequence non-membership],
+    [`s[lo..hi]`], [`seq<T>`], [subsequence],
+    [`s[lo..]`], [`seq<T>`], [drop],
+    [`s[..hi]`], [`seq<T>`], [take],
+    [`s[`_slices_`]`], [`seq<seq<T>>`], [slice],
+    [`multiset(s)`], [`multiset<T>`], [sequence conversion to a `multiset<T>`]
+  )
+)
+
+我需要重新改造我的 ast 设计.
 
 = Soundness Proof
 

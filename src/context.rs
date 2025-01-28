@@ -82,7 +82,6 @@ impl Context {
         };
 
         self.macros.insert(name, (content, ty));
-        println!("macro: {:?}", self.macros);
     }
 
     pub fn lookup_macro(&self, name: &str) -> Option<&(String, Type)> {

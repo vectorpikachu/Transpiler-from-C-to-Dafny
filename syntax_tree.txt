@@ -7,6 +7,15 @@ translation_unit: // Source: data/benchmarks/accelerating_invariant_generation/s
 #define SIZE 8
 int main() { 
   int i=0, sn=0;
+
+  int zz;
+
+  int aer[100] = {0};
+
+  int tt = aer[2];
+
+  aer[3] = tt;
+
   for(int z = 5; i<=SIZE; i+1, i++) {
     sn = sn + a;
   }
@@ -15,7 +24,7 @@ int main() {
 }
 
 }
- (1:1 - 17:1)
+ (1:1 - 26:1)
   comment: // Source: data/benchmarks/accelerating_invariant_generation/svcomp/sum04_true.c (1:1 - 1:82)
   preproc_include: #include <stdlib.h>
  (2:1 - 3:1)
@@ -42,6 +51,15 @@ int main() {
     preproc_arg: 8 (6:14 - 6:16)
   function_definition: int main() { 
   int i=0, sn=0;
+
+  int zz;
+
+  int aer[100] = {0};
+
+  int tt = aer[2];
+
+  aer[3] = tt;
+
   for(int z = 5; i<=SIZE; i+1, i++) {
     sn = sn + a;
   }
@@ -49,7 +67,7 @@ int main() {
  assert(sn==SIZE*a || sn == 0);
 }
 
-} (7:1 - 16:2)
+} (7:1 - 25:2)
     primitive_type: int (7:1 - 7:4)
     function_declarator: main() (7:5 - 7:11)
       identifier: main (7:5 - 7:9)
@@ -58,6 +76,15 @@ int main() {
         ): ) (7:10 - 7:11)
     compound_statement: { 
   int i=0, sn=0;
+
+  int zz;
+
+  int aer[100] = {0};
+
+  int tt = aer[2];
+
+  aer[3] = tt;
+
   for(int z = 5; i<=SIZE; i+1, i++) {
     sn = sn + a;
   }
@@ -65,7 +92,7 @@ int main() {
  assert(sn==SIZE*a || sn == 0);
 }
 
-} (7:12 - 16:2)
+} (7:12 - 25:2)
       {: { (7:12 - 7:13)
       declaration: int i=0, sn=0; (8:3 - 8:17)
         primitive_type: int (8:3 - 8:6)
@@ -79,72 +106,111 @@ int main() {
           =: = (8:14 - 8:15)
           number_literal: 0 (8:15 - 8:16)
         ;: ; (8:16 - 8:17)
+      declaration: int zz; (10:3 - 10:10)
+        primitive_type: int (10:3 - 10:6)
+        identifier: zz (10:7 - 10:9)
+        ;: ; (10:9 - 10:10)
+      declaration: int aer[100] = {0}; (12:3 - 12:22)
+        primitive_type: int (12:3 - 12:6)
+        init_declarator: aer[100] = {0} (12:7 - 12:21)
+          array_declarator: aer[100] (12:7 - 12:15)
+            identifier: aer (12:7 - 12:10)
+            [: [ (12:10 - 12:11)
+            number_literal: 100 (12:11 - 12:14)
+            ]: ] (12:14 - 12:15)
+          =: = (12:16 - 12:17)
+          initializer_list: {0} (12:18 - 12:21)
+            {: { (12:18 - 12:19)
+            number_literal: 0 (12:19 - 12:20)
+            }: } (12:20 - 12:21)
+        ;: ; (12:21 - 12:22)
+      declaration: int tt = aer[2]; (14:3 - 14:19)
+        primitive_type: int (14:3 - 14:6)
+        init_declarator: tt = aer[2] (14:7 - 14:18)
+          identifier: tt (14:7 - 14:9)
+          =: = (14:10 - 14:11)
+          subscript_expression: aer[2] (14:12 - 14:18)
+            identifier: aer (14:12 - 14:15)
+            [: [ (14:15 - 14:16)
+            number_literal: 2 (14:16 - 14:17)
+            ]: ] (14:17 - 14:18)
+        ;: ; (14:18 - 14:19)
+      expression_statement: aer[3] = tt; (16:3 - 16:15)
+        assignment_expression: aer[3] = tt (16:3 - 16:14)
+          subscript_expression: aer[3] (16:3 - 16:9)
+            identifier: aer (16:3 - 16:6)
+            [: [ (16:6 - 16:7)
+            number_literal: 3 (16:7 - 16:8)
+            ]: ] (16:8 - 16:9)
+          =: = (16:10 - 16:11)
+          identifier: tt (16:12 - 16:14)
+        ;: ; (16:14 - 16:15)
       for_statement: for(int z = 5; i<=SIZE; i+1, i++) {
     sn = sn + a;
-  } (9:3 - 11:4)
-        for: for (9:3 - 9:6)
-        (: ( (9:6 - 9:7)
-        declaration: int z = 5; (9:7 - 9:17)
-          primitive_type: int (9:7 - 9:10)
-          init_declarator: z = 5 (9:11 - 9:16)
-            identifier: z (9:11 - 9:12)
-            =: = (9:13 - 9:14)
-            number_literal: 5 (9:15 - 9:16)
-          ;: ; (9:16 - 9:17)
-        binary_expression: i<=SIZE (9:18 - 9:25)
-          identifier: i (9:18 - 9:19)
-          <=: <= (9:19 - 9:21)
-          identifier: SIZE (9:21 - 9:25)
-        ;: ; (9:25 - 9:26)
-        comma_expression: i+1, i++ (9:27 - 9:35)
-          binary_expression: i+1 (9:27 - 9:30)
-            identifier: i (9:27 - 9:28)
-            +: + (9:28 - 9:29)
-            number_literal: 1 (9:29 - 9:30)
-          ,: , (9:30 - 9:31)
-          update_expression: i++ (9:32 - 9:35)
-            identifier: i (9:32 - 9:33)
-            ++: ++ (9:33 - 9:35)
-        ): ) (9:35 - 9:36)
+  } (18:3 - 20:4)
+        for: for (18:3 - 18:6)
+        (: ( (18:6 - 18:7)
+        declaration: int z = 5; (18:7 - 18:17)
+          primitive_type: int (18:7 - 18:10)
+          init_declarator: z = 5 (18:11 - 18:16)
+            identifier: z (18:11 - 18:12)
+            =: = (18:13 - 18:14)
+            number_literal: 5 (18:15 - 18:16)
+          ;: ; (18:16 - 18:17)
+        binary_expression: i<=SIZE (18:18 - 18:25)
+          identifier: i (18:18 - 18:19)
+          <=: <= (18:19 - 18:21)
+          identifier: SIZE (18:21 - 18:25)
+        ;: ; (18:25 - 18:26)
+        comma_expression: i+1, i++ (18:27 - 18:35)
+          binary_expression: i+1 (18:27 - 18:30)
+            identifier: i (18:27 - 18:28)
+            +: + (18:28 - 18:29)
+            number_literal: 1 (18:29 - 18:30)
+          ,: , (18:30 - 18:31)
+          update_expression: i++ (18:32 - 18:35)
+            identifier: i (18:32 - 18:33)
+            ++: ++ (18:33 - 18:35)
+        ): ) (18:35 - 18:36)
         compound_statement: {
     sn = sn + a;
-  } (9:37 - 11:4)
-          {: { (9:37 - 9:38)
-          expression_statement: sn = sn + a; (10:5 - 10:17)
-            assignment_expression: sn = sn + a (10:5 - 10:16)
-              identifier: sn (10:5 - 10:7)
-              =: = (10:8 - 10:9)
-              binary_expression: sn + a (10:10 - 10:16)
-                identifier: sn (10:10 - 10:12)
-                +: + (10:13 - 10:14)
-                identifier: a (10:15 - 10:16)
-            ;: ; (10:16 - 10:17)
-          }: } (11:3 - 11:4)
+  } (18:37 - 20:4)
+          {: { (18:37 - 18:38)
+          expression_statement: sn = sn + a; (19:5 - 19:17)
+            assignment_expression: sn = sn + a (19:5 - 19:16)
+              identifier: sn (19:5 - 19:7)
+              =: = (19:8 - 19:9)
+              binary_expression: sn + a (19:10 - 19:16)
+                identifier: sn (19:10 - 19:12)
+                +: + (19:13 - 19:14)
+                identifier: a (19:15 - 19:16)
+            ;: ; (19:16 - 19:17)
+          }: } (20:3 - 20:4)
       compound_statement: {;
  assert(sn==SIZE*a || sn == 0);
-} (12:3 - 14:2)
-        {: { (12:3 - 12:4)
-        expression_statement: ; (12:4 - 12:5)
-          ;: ; (12:4 - 12:5)
-        expression_statement: assert(sn==SIZE*a || sn == 0); (13:2 - 13:32)
-          call_expression: assert(sn==SIZE*a || sn == 0) (13:2 - 13:31)
-            identifier: assert (13:2 - 13:8)
-            argument_list: (sn==SIZE*a || sn == 0) (13:8 - 13:31)
-              (: ( (13:8 - 13:9)
-              binary_expression: sn==SIZE*a || sn == 0 (13:9 - 13:30)
-                binary_expression: sn==SIZE*a (13:9 - 13:19)
-                  identifier: sn (13:9 - 13:11)
-                  ==: == (13:11 - 13:13)
-                  binary_expression: SIZE*a (13:13 - 13:19)
-                    identifier: SIZE (13:13 - 13:17)
-                    *: * (13:17 - 13:18)
-                    identifier: a (13:18 - 13:19)
-                ||: || (13:20 - 13:22)
-                binary_expression: sn == 0 (13:23 - 13:30)
-                  identifier: sn (13:23 - 13:25)
-                  ==: == (13:26 - 13:28)
-                  number_literal: 0 (13:29 - 13:30)
-              ): ) (13:30 - 13:31)
-          ;: ; (13:31 - 13:32)
-        }: } (14:1 - 14:2)
-      }: } (16:1 - 16:2)
+} (21:3 - 23:2)
+        {: { (21:3 - 21:4)
+        expression_statement: ; (21:4 - 21:5)
+          ;: ; (21:4 - 21:5)
+        expression_statement: assert(sn==SIZE*a || sn == 0); (22:2 - 22:32)
+          call_expression: assert(sn==SIZE*a || sn == 0) (22:2 - 22:31)
+            identifier: assert (22:2 - 22:8)
+            argument_list: (sn==SIZE*a || sn == 0) (22:8 - 22:31)
+              (: ( (22:8 - 22:9)
+              binary_expression: sn==SIZE*a || sn == 0 (22:9 - 22:30)
+                binary_expression: sn==SIZE*a (22:9 - 22:19)
+                  identifier: sn (22:9 - 22:11)
+                  ==: == (22:11 - 22:13)
+                  binary_expression: SIZE*a (22:13 - 22:19)
+                    identifier: SIZE (22:13 - 22:17)
+                    *: * (22:17 - 22:18)
+                    identifier: a (22:18 - 22:19)
+                ||: || (22:20 - 22:22)
+                binary_expression: sn == 0 (22:23 - 22:30)
+                  identifier: sn (22:23 - 22:25)
+                  ==: == (22:26 - 22:28)
+                  number_literal: 0 (22:29 - 22:30)
+              ): ) (22:30 - 22:31)
+          ;: ; (22:31 - 22:32)
+        }: } (23:1 - 23:2)
+      }: } (25:1 - 25:2)

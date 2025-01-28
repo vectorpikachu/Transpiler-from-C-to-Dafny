@@ -6,6 +6,15 @@
 #define SIZE 8
 int main() { 
   int i=0, sn=0;
+
+  int zz;
+
+  int aer[100] = {0};
+
+  int tt = aer[2];
+
+  aer[3] = tt;
+
   for(int z = 5; i<=SIZE; i+1, i++) {
     sn = sn + a;
   }

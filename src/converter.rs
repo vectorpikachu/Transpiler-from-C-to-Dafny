@@ -210,7 +210,6 @@ fn parse_func_params(node: &Node, context: &mut Context, source: &str) -> Option
     let mut params = vec![];
 
     for param in func_params.children(&mut node.walk()) {
-        println!("param: {:?}'s kind {}", param, param.kind());
         match param.kind() {
             "parameter_declaration" => {
                 let param_type = param.child_by_field_name("type")?;
@@ -239,9 +238,6 @@ fn parse_func_params(node: &Node, context: &mut Context, source: &str) -> Option
 }
 
 fn parse_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
-    println!("\nparse_stmt: {:?}\n", node);
-    println!("kind {:?}", node.kind());
-
     let mut stmts = vec![];
 
     let stmt = match node.kind() {
@@ -267,7 +263,6 @@ fn parse_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<St
             }
         }
         "if_statement" => {
-            println!("看看看看if_statement: {:?}", node);
             let stmt = parse_if_stmt(&node, context, source);
             match stmt {
                 Some(stmt) => stmt,
@@ -365,7 +360,6 @@ fn generate_constructor(vars: &Vec<FieldDecl>, context: &Context, source: &str) 
 }
 
 fn parse_return(node: &Node, context: &mut Context, source: &str) -> Option<Stmt> {
-    println!("stmt return expr {:?}", node.field_name_for_child(2));
     let mut ret_expr = None;
     for child_node in node.children(&mut node.walk()) {
         match child_node.kind() {
@@ -383,7 +377,6 @@ fn parse_return(node: &Node, context: &mut Context, source: &str) -> Option<Stmt
             "return" => {}
             _ => {
                 // Expressions
-                println!("{:?}", child_node.utf8_text(source.as_bytes()));
                 ret_expr = parse_expr(&child_node, context, source);
             }
         }
@@ -402,12 +395,18 @@ fn parse_declaration(node: &Node, context: &mut Context, source: &str) -> Option
 
         if decl.kind() == "array_declarator" {
             // TODO: 处理数组
-            continue;
+            unimplemented!();
         }
 
         let mut name = decl.utf8_text(source.as_bytes());
         let mut init = None;
-        if let Some(init_value) = decl.child_by_field_name("value") {
+        if decl.kind() == "init_declarator" {
+            let decl_node = decl.child_by_field_name("declarator")?;
+            let init_value = decl.child_by_field_name("value")?;
+            if decl_node.kind() == "array_declarator" {
+                // TODO: 处理数组
+                unimplemented!();
+            }
             name = decl
                 .child_by_field_name("declarator")?
                 .utf8_text(source.as_bytes());
@@ -628,7 +627,6 @@ fn parse_for_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Ve
             }
             counter += 1;
         } else if counter == 1 {
-            println!("cond: {:?}, {:?}", child, child.kind());
             let cond_exp = parse_expr(&child, context, source);
 
             if cond_exp.is_none() {
@@ -638,7 +636,6 @@ fn parse_for_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Ve
                 ));
                 continue;
             }
-            println!("cond_exp: {:?}", cond_exp);
             cond.push(cond_exp.unwrap());
         } else if counter == 2 {
             let stmt = parse_expr_stmt(&child, context, source);
@@ -768,7 +765,6 @@ fn parse_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> 
             if val_ty.is_some() {
                 let val = &val_ty.unwrap().0;
                 let ty = &val_ty.unwrap().1;
-                println!("macro found: {}", val);
                 match ty {
                     Type::Int => {
                         return Some(
@@ -877,13 +873,11 @@ fn parse_unary_expr(node: &Node, context: &mut Context, source: &str) -> Option<
 fn parse_binary_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> {
     let lhs = parse_expr(&node.child(0).unwrap(), context, source);
     let rhs = parse_expr(&node.child(2).unwrap(), context, source);
-    println!("这里是lhs: {:?}, rhs: {:?}", lhs, rhs);
     if lhs.is_none() || rhs.is_none() {
         println!("Error: parse_binary_expr {:?} {:?}", lhs, rhs);
         return None;
     }
     let op = node.child(1).unwrap();
-    println!("op: {:?}", op.kind());
     let lhs = lhs.unwrap();
     let rhs = rhs.unwrap();
     let exp = match op.kind() {
@@ -976,7 +970,6 @@ fn parse_binary_expr(node: &Node, context: &mut Context, source: &str) -> Option
         }
     };
 
-    println!("二元运算式子exp: {:?}", exp);
     Some(exp)
 }
 
@@ -1002,8 +995,6 @@ fn parse_call_expr(node: &Node, context: &mut Context, source: &str) -> Option<E
     if func_name == "assume" {
         return None;
     }
-
-    println!("func_name: {} -> {:?}", func_name, context.lookup_var(func_name));
 
     let func_ty = context.lookup_var(func_name).unwrap().clone();
 
