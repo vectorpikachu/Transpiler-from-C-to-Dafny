@@ -17,7 +17,7 @@ pub enum Declaration {
 #[derive(Debug, Clone)]
 pub struct MethodDecl {
     pub id: String,
-    pub params: Vec<Param>,
+    pub params: Option<Vec<Param>>,
     pub returns: Vec<ReturnVar>,
     pub return_type: Option<Type>,
     pub requires: Vec<Expr>,
@@ -187,6 +187,7 @@ pub enum PrimaryExpr {
 pub enum Literal {
     Integer(String),
     Boolean(bool),
+    Real(f64),
     Null,
     Sequence(Vec<Expr>),
     Star, // represents any value
@@ -219,6 +220,21 @@ pub enum Stmt {
     DeclVar(Var),
     Break,
     Continue,
+    Assume(Expr),
+    Call(Call),
+}
+
+pub fn is_return(stmt: &Stmt) -> bool {
+    match stmt {
+        Stmt::Return(_) => true,
+        _ => false,
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Call {
+    pub id: String,
+    pub args: Vec<Expr>,
 }
 
 #[derive(Debug, Clone)]

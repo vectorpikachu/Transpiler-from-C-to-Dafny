@@ -9,7 +9,7 @@ class CProgram {
     var y : int := *;
     x := 1;
     y := 0;
-    while (y < 100000)
+    while (y < 1000)
       decreases *
     {
       x := (x + y);

@@ -26,7 +26,9 @@ impl DafnyPrinter {
 
     fn print_method_decl(method: &MethodDecl, indent_level: usize) -> String {
         let mut result = format!("{}method {}(", Self::indent(indent_level), method.id);
-        result.push_str(&Self::print_params(&method.params));
+        if method.params.is_some() {
+            result.push_str(&Self::print_params(method.params.as_ref().unwrap()));
+        }
         result.push(')');
 
         if !method.returns.is_empty() {
@@ -180,7 +182,7 @@ impl DafnyPrinter {
         result
     }
 
-    fn print_params(params: &[Param]) -> String {
+    fn print_params(params: &Vec<Param>) -> String {
         params
             .iter()
             .map(|p| format!("{}: {}", p.id, Self::print_type(&p.type_)))
@@ -358,6 +360,7 @@ impl DafnyPrinter {
                 result += "]";
                 result
             }
+            Literal::Real(value) => value.to_string(),
         }
     }
 
@@ -413,7 +416,7 @@ impl DafnyPrinter {
                     ));
                 } else {
                     result.push_str(&format!(
-                        "var {} : {};",
+                        "var {} : {} := *;",
                         var.id,
                         Self::print_type(&var.type_)
                     ));
@@ -424,6 +427,12 @@ impl DafnyPrinter {
             }
             Stmt::Continue => {
                 result.push_str("continue;");
+            }
+            Stmt::Call(call) => {
+                result.push_str(&Self::print_call(call));
+            }
+            Stmt::Assume(expr) => {
+                result.push_str(&format!("assume {{:axiom}} {};", Self::print_expr(expr)));
             }
         }
         result
@@ -448,7 +457,7 @@ impl DafnyPrinter {
     }
 
     fn print_if_else(if_else: &IfElse, indent_level: usize) -> String {
-        let mut result = format!("if ({}) {{\n", Self::print_expr(&if_else.cond));
+        let mut result = format!("if {} {{\n", Self::print_expr(&if_else.cond));
         result.push_str(&Self::print_block(&if_else.then_block, indent_level + 1));
         result.push_str(&Self::indent(indent_level));
         result.push('}');
@@ -535,6 +544,15 @@ impl DafnyPrinter {
                 format!("{}({})", name, sub_patterns)
             }
         }
+    }
+
+    fn print_call(call: &Call) -> String {
+        let mut result = format!("{}(", call.id);
+        for arg in &call.args {
+            result.push_str(&Self::print_expr(arg));
+        }
+        result.push_str(");");
+        result
     }
 
     fn indent(level: usize) -> String {

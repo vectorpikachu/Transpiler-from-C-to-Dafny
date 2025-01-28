@@ -7,6 +7,7 @@ pub struct Context {
     tmp_var_gen: TempVarGenerator,
     current_method: Option<String>,
     scope_stack: Vec<HashMap<String, Type>>, // include all the methods
+    macros: HashMap<String, (String, Type)>, // the identifier and the macro string
 }
 
 impl Context {
@@ -15,6 +16,7 @@ impl Context {
             tmp_var_gen: TempVarGenerator::new("tmp_"),
             current_method: None,
             scope_stack: vec![HashMap::new()],
+            macros: HashMap::new(),
         }
     }
 
@@ -60,6 +62,24 @@ impl Context {
             }
         }
         None
+    }
+
+    /// a very very ugly implementation of macro
+    pub fn insert_macro(&mut self, name: String, content: String) {
+        let ty = if content.as_str().contains(".") {
+            Type::Real
+        } else if content.as_str().contains("true") || content.as_str().contains("false") {
+            Type::Bool
+        } else {
+            Type::Int
+        };
+
+        self.macros.insert(name, (content, ty));
+        println!("macro: {:?}", self.macros);
+    }
+
+    pub fn lookup_macro(&self, name: &str) -> Option<&(String, Type)> {
+        self.macros.get(name)
     }
 
 }

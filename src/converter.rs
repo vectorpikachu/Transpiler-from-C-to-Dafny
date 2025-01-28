@@ -19,6 +19,10 @@ pub fn convert(tree: Tree, context: &mut Context, source: &str) -> Program {
                     methods.push(method);
                 }
             }
+            "preproc_def" => {
+                parse_marcro(&child, context, source); // add the marcro to the context
+                // replace the marcro in the identifier
+            }
             _ => {}
         }
     }
@@ -82,6 +86,16 @@ fn parse_global_var(node: &Node, context: &mut Context, source: &str) -> Option<
     }
 }
 
+// TODO: Parse Macros
+fn parse_marcro(node: &Node, context: &mut Context, source: &str) {
+    let id = node.child(1).unwrap();
+    let id = id.utf8_text(source.as_bytes()).expect("Error parsing macro id").trim();
+    let val = node.child(2).unwrap();
+    let val = val.utf8_text(source.as_bytes()).expect("Error parsing macro val").trim();
+    context.insert_macro(id.to_string(), val.to_string());
+    
+}
+
 /// 解析 类型
 fn parse_type(node: &Node, context: &mut Context, source: &str) -> Option<Type> {
     let ty_name = node.utf8_text(source.as_bytes());
@@ -122,6 +136,20 @@ fn parse_function(node: &Node, context: &mut Context, source: &str) -> Option<Me
         stmts.extend(stmt.unwrap());
     }
 
+    let mut has_return = false;
+    for stmt in stmts.iter() {
+        if is_return(stmt) {
+            has_return = true;
+            break;
+        }
+    }
+
+    if !has_return && func_type.is_some() {
+        stmts.push(Stmt::Return(Some(
+            Expr::Primary(PrimaryExpr::Literal(Literal::Integer("0".to_string())), Type::Int)
+        )));
+    }
+
     let returns = match func_type.clone() {
         Some(t) => {
             vec![ReturnVar {
@@ -146,7 +174,7 @@ fn parse_function(node: &Node, context: &mut Context, source: &str) -> Option<Me
     let decrease_expr = Expr::Primary(PrimaryExpr::Literal(Literal::Star), Type::Star);
     let method_decl = MethodDecl {
         id: func_name.unwrap(),
-        params: func_params.unwrap(),
+        params: func_params,
         returns: returns,
         return_type: func_type,
         requires: vec![],
@@ -424,6 +452,18 @@ fn parse_expr_stmt(node: &Node, context: &mut Context, source: &str) -> Option<V
                 stmts.extend(update_stmt.unwrap());
             }
         }
+        "call_expression" => {
+            let call_stmt = parse_call_statement(&node, context, source);
+            if call_stmt.is_some() {
+                stmts.extend(call_stmt.unwrap());
+            }
+        }
+        "parenthesized_expression" => {
+            let stmt = parse_expr_stmt(&node.child(1).unwrap(), context, source);
+            if stmt.is_some() {
+                stmts.extend(stmt.unwrap());
+            }
+        }
         _ => {}
     }
 
@@ -591,6 +631,40 @@ fn parse_compound_stmt(node: &Node, context: &mut Context, source: &str) -> Opti
     Some(stmts)
 }
 
+fn parse_call_statement(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
+    let mut stmts = vec![];
+
+    let func_name = node.child(0).unwrap();
+    let mut args = vec![];
+    let arg_list = node.child(1).unwrap();
+    for arg in arg_list.children(&mut arg_list.walk()) {
+        if arg.kind() == "(" || arg.kind() == ")" || arg.kind() == "," {
+            continue;
+        }
+        let arg_expr = parse_expr(&arg, context, source);
+        if arg_expr.is_some() {
+            args.push(arg_expr.unwrap());
+        }
+    }
+    let func_name = func_name.utf8_text(source.as_bytes()).unwrap();
+
+    if func_name == "assume" {
+        let stmt = Stmt::Assume(
+            args[0].clone()
+        );
+        stmts.push(stmt);
+        return Some(stmts);
+    }
+
+    let call_stmt = Stmt::Call(
+        Call { id: func_name.to_string(), 
+            args: args, }
+    );
+    stmts.push(call_stmt);
+
+    Some(stmts)
+}
+
 // TODO: Parse expressions
 fn parse_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> {
     println!("我们的表达式类型是: {:?}", node.kind());
@@ -599,6 +673,36 @@ fn parse_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> 
         "binary_expression" => parse_binary_expr(node, context, source),
         "identifier" => {
             let id = node.utf8_text(source.as_bytes()).unwrap();
+            let val_ty = context.lookup_macro(id);
+            if val_ty.is_some() {
+                let val = &val_ty.unwrap().0;
+                let ty = &val_ty.unwrap().1;
+                println!("macro found: {}", val);
+                match ty {
+                    Type::Int => {
+                        return Some(
+                            Expr::Primary(PrimaryExpr::Literal(Literal::Integer(val.clone())), ty.clone())
+                        );
+                    }
+                    Type::Bool => {
+                        let bool_val = if val == "true" {
+                            true
+                        } else {
+                            false
+                        };
+                        return Some(
+                            Expr::Primary(PrimaryExpr::Literal(Literal::Boolean(bool_val)), ty.clone())
+                        );
+                    }
+                    Type::Real => {
+                        let float_val = val.parse::<f64>().unwrap();
+                        return Some(
+                            Expr::Primary(PrimaryExpr::Literal(Literal::Real(float_val)), ty.clone())
+                        );
+                    }
+                    _ => {}
+                }
+            }
             Some(Expr::Primary(
                 PrimaryExpr::Identifier(id.to_string()),
                 context.lookup_var(id).unwrap().clone(),
@@ -797,9 +901,15 @@ fn parse_call_expr(node: &Node, context: &mut Context, source: &str) -> Option<E
     }
     let func_name = func_name.utf8_text(source.as_bytes()).unwrap();
 
-    if func_name == "unknown_int" {
+    if func_name == "unknown_int" || func_name == "unknown" {
         return Some(Expr::Primary(PrimaryExpr::Literal(Literal::Star), Type::Star));
     }
+
+    if func_name == "assume" {
+        return None;
+    }
+
+    println!("func_name: {} -> {:?}", func_name, context.lookup_var(func_name));
 
     let func_ty = context.lookup_var(func_name).unwrap().clone();
 

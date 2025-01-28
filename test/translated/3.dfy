@@ -5,17 +5,18 @@ class CProgram {
     decreases *
     modifies this
   {
-    var x : int := *;
+    var x : int := 0;
     var y : int := *;
-    x := 1;
-    y := 0;
-    while (y < 100000)
+    var z : int := *;
+    while (x < 5)
       decreases *
     {
-      x := (x + y);
-      y := (y + 1);
+      x := 1;
+      if (z <= y) {
+        y := z;
+      }
     }
-    assert((x >= y));
+    assert((z >= y));
     return 0;
   }
 
