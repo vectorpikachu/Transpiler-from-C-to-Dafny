@@ -1,25 +1,16 @@
-// Source: data/benchmarks/code2inv/1.c
+// Source: data/benchmarks/accelerating_invariant_generation/svcomp/sum04_true.c
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
 
-int main() {
-  
-  int x;
-  int y;
-  
-  (x = 1);
-  (y = 0);
-  
-  while ((y < 100000)) {
-    {
-    (x  = (x + y));
-    (y  = (y + 1));
-    }
-
+#define a (2)
+#define SIZE 8
+int main() { 
+  int i=0, sn=0;
+  for(int z = 5; i<=SIZE; i+1, i++) {
+    sn = sn + a;
   }
-  
-{;
-//@ assert( (x >= y) );
+  {;
+//@ assert(sn==SIZE*a || sn == 0);
 }
 
 }

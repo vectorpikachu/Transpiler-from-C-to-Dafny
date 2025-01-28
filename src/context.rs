@@ -74,6 +74,13 @@ impl Context {
             Type::Int
         };
 
+        // 如果有最外层的括号的话, 删除掉这个 macro 最外层的括号
+        let content = if content.starts_with("(") && content.ends_with(")") {
+            content[1..content.len()-1].to_string()
+        } else {
+            content
+        };
+
         self.macros.insert(name, (content, ty));
         println!("macro: {:?}", self.macros);
     }

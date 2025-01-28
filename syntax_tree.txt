@@ -1,34 +1,22 @@
 Syntax tree:
-translation_unit: // Source: data/benchmarks/code2inv/9.c
+translation_unit: // Source: data/benchmarks/accelerating_invariant_generation/svcomp/sum04_true.c
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
-extern int unknown(void);
 
-int main() {
-  
-  int x;
-  int y;
-  
-  assume((x >= 0));
-  assume((x <= 2));
-  assume((y <= 2));
-  assume((y >= 0));
-  
-  while (unknown()) {
-    {
-    (x  = (x + 2));
-    (y  = (y + 2));
-    }
-
+#define a (2)
+#define SIZE 8
+int main() { 
+  int i=0, sn=0;
+  for(int z = 5; i<=SIZE; i+1, i++) {
+    sn = sn + a;
   }
-  
-if ( (x == 4) )
-{;
- assert( (y != 0) );
+  {;
+ assert(sn==SIZE*a || sn == 0);
 }
 
-} (1:1 - 29:2)
-  comment: // Source: data/benchmarks/code2inv/9.c (1:1 - 1:40)
+}
+ (1:1 - 17:1)
+  comment: // Source: data/benchmarks/accelerating_invariant_generation/svcomp/sum04_true.c (1:1 - 1:82)
   preproc_include: #include <stdlib.h>
  (2:1 - 3:1)
     #include: #include (2:1 - 2:9)
@@ -41,233 +29,122 @@ if ( (x == 4) )
       (: ( (3:15 - 3:16)
       identifier: e (3:16 - 3:17)
       ): ) (3:17 - 3:18)
-    preproc_arg: if(!(e)) exit(-1); (3:19 - 3:37)
-  declaration: extern int unknown(void); (4:1 - 4:26)
-    storage_class_specifier: extern (4:1 - 4:7)
-      extern: extern (4:1 - 4:7)
-    primitive_type: int (4:8 - 4:11)
-    function_declarator: unknown(void) (4:12 - 4:25)
-      identifier: unknown (4:12 - 4:19)
-      parameter_list: (void) (4:19 - 4:25)
-        (: ( (4:19 - 4:20)
-        parameter_declaration: void (4:20 - 4:24)
-          primitive_type: void (4:20 - 4:24)
-        ): ) (4:24 - 4:25)
-    ;: ; (4:25 - 4:26)
-  function_definition: int main() {
-  
-  int x;
-  int y;
-  
-  assume((x >= 0));
-  assume((x <= 2));
-  assume((y <= 2));
-  assume((y >= 0));
-  
-  while (unknown()) {
-    {
-    (x  = (x + 2));
-    (y  = (y + 2));
-    }
-
+    preproc_arg: if(!(e)) exit(-1); (3:19 - 3:38)
+  preproc_def: #define a (2)
+ (5:1 - 6:1)
+    #define: #define (5:1 - 5:8)
+    identifier: a (5:9 - 5:10)
+    preproc_arg: (2) (5:11 - 5:15)
+  preproc_def: #define SIZE 8
+ (6:1 - 7:1)
+    #define: #define (6:1 - 6:8)
+    identifier: SIZE (6:9 - 6:13)
+    preproc_arg: 8 (6:14 - 6:16)
+  function_definition: int main() { 
+  int i=0, sn=0;
+  for(int z = 5; i<=SIZE; i+1, i++) {
+    sn = sn + a;
   }
-  
-if ( (x == 4) )
-{;
- assert( (y != 0) );
+  {;
+ assert(sn==SIZE*a || sn == 0);
 }
 
-} (6:1 - 29:2)
-    primitive_type: int (6:1 - 6:4)
-    function_declarator: main() (6:5 - 6:11)
-      identifier: main (6:5 - 6:9)
-      parameter_list: () (6:9 - 6:11)
-        (: ( (6:9 - 6:10)
-        ): ) (6:10 - 6:11)
-    compound_statement: {
-  
-  int x;
-  int y;
-  
-  assume((x >= 0));
-  assume((x <= 2));
-  assume((y <= 2));
-  assume((y >= 0));
-  
-  while (unknown()) {
-    {
-    (x  = (x + 2));
-    (y  = (y + 2));
-    }
-
+} (7:1 - 16:2)
+    primitive_type: int (7:1 - 7:4)
+    function_declarator: main() (7:5 - 7:11)
+      identifier: main (7:5 - 7:9)
+      parameter_list: () (7:9 - 7:11)
+        (: ( (7:9 - 7:10)
+        ): ) (7:10 - 7:11)
+    compound_statement: { 
+  int i=0, sn=0;
+  for(int z = 5; i<=SIZE; i+1, i++) {
+    sn = sn + a;
   }
-  
-if ( (x == 4) )
-{;
- assert( (y != 0) );
+  {;
+ assert(sn==SIZE*a || sn == 0);
 }
 
-} (6:12 - 29:2)
-      {: { (6:12 - 6:13)
-      declaration: int x; (8:3 - 8:9)
+} (7:12 - 16:2)
+      {: { (7:12 - 7:13)
+      declaration: int i=0, sn=0; (8:3 - 8:17)
         primitive_type: int (8:3 - 8:6)
-        identifier: x (8:7 - 8:8)
-        ;: ; (8:8 - 8:9)
-      declaration: int y; (9:3 - 9:9)
-        primitive_type: int (9:3 - 9:6)
-        identifier: y (9:7 - 9:8)
-        ;: ; (9:8 - 9:9)
-      expression_statement: assume((x >= 0)); (11:3 - 11:20)
-        call_expression: assume((x >= 0)) (11:3 - 11:19)
-          identifier: assume (11:3 - 11:9)
-          argument_list: ((x >= 0)) (11:9 - 11:19)
-            (: ( (11:9 - 11:10)
-            parenthesized_expression: (x >= 0) (11:10 - 11:18)
-              (: ( (11:10 - 11:11)
-              binary_expression: x >= 0 (11:11 - 11:17)
-                identifier: x (11:11 - 11:12)
-                >=: >= (11:13 - 11:15)
-                number_literal: 0 (11:16 - 11:17)
-              ): ) (11:17 - 11:18)
-            ): ) (11:18 - 11:19)
-        ;: ; (11:19 - 11:20)
-      expression_statement: assume((x <= 2)); (12:3 - 12:20)
-        call_expression: assume((x <= 2)) (12:3 - 12:19)
-          identifier: assume (12:3 - 12:9)
-          argument_list: ((x <= 2)) (12:9 - 12:19)
-            (: ( (12:9 - 12:10)
-            parenthesized_expression: (x <= 2) (12:10 - 12:18)
-              (: ( (12:10 - 12:11)
-              binary_expression: x <= 2 (12:11 - 12:17)
-                identifier: x (12:11 - 12:12)
-                <=: <= (12:13 - 12:15)
-                number_literal: 2 (12:16 - 12:17)
-              ): ) (12:17 - 12:18)
-            ): ) (12:18 - 12:19)
-        ;: ; (12:19 - 12:20)
-      expression_statement: assume((y <= 2)); (13:3 - 13:20)
-        call_expression: assume((y <= 2)) (13:3 - 13:19)
-          identifier: assume (13:3 - 13:9)
-          argument_list: ((y <= 2)) (13:9 - 13:19)
-            (: ( (13:9 - 13:10)
-            parenthesized_expression: (y <= 2) (13:10 - 13:18)
-              (: ( (13:10 - 13:11)
-              binary_expression: y <= 2 (13:11 - 13:17)
-                identifier: y (13:11 - 13:12)
-                <=: <= (13:13 - 13:15)
-                number_literal: 2 (13:16 - 13:17)
-              ): ) (13:17 - 13:18)
-            ): ) (13:18 - 13:19)
-        ;: ; (13:19 - 13:20)
-      expression_statement: assume((y >= 0)); (14:3 - 14:20)
-        call_expression: assume((y >= 0)) (14:3 - 14:19)
-          identifier: assume (14:3 - 14:9)
-          argument_list: ((y >= 0)) (14:9 - 14:19)
-            (: ( (14:9 - 14:10)
-            parenthesized_expression: (y >= 0) (14:10 - 14:18)
-              (: ( (14:10 - 14:11)
-              binary_expression: y >= 0 (14:11 - 14:17)
-                identifier: y (14:11 - 14:12)
-                >=: >= (14:13 - 14:15)
-                number_literal: 0 (14:16 - 14:17)
-              ): ) (14:17 - 14:18)
-            ): ) (14:18 - 14:19)
-        ;: ; (14:19 - 14:20)
-      while_statement: while (unknown()) {
-    {
-    (x  = (x + 2));
-    (y  = (y + 2));
-    }
-
-  } (16:3 - 22:4)
-        while: while (16:3 - 16:8)
-        parenthesized_expression: (unknown()) (16:9 - 16:20)
-          (: ( (16:9 - 16:10)
-          call_expression: unknown() (16:10 - 16:19)
-            identifier: unknown (16:10 - 16:17)
-            argument_list: () (16:17 - 16:19)
-              (: ( (16:17 - 16:18)
-              ): ) (16:18 - 16:19)
-          ): ) (16:19 - 16:20)
+        init_declarator: i=0 (8:7 - 8:10)
+          identifier: i (8:7 - 8:8)
+          =: = (8:8 - 8:9)
+          number_literal: 0 (8:9 - 8:10)
+        ,: , (8:10 - 8:11)
+        init_declarator: sn=0 (8:12 - 8:16)
+          identifier: sn (8:12 - 8:14)
+          =: = (8:14 - 8:15)
+          number_literal: 0 (8:15 - 8:16)
+        ;: ; (8:16 - 8:17)
+      for_statement: for(int z = 5; i<=SIZE; i+1, i++) {
+    sn = sn + a;
+  } (9:3 - 11:4)
+        for: for (9:3 - 9:6)
+        (: ( (9:6 - 9:7)
+        declaration: int z = 5; (9:7 - 9:17)
+          primitive_type: int (9:7 - 9:10)
+          init_declarator: z = 5 (9:11 - 9:16)
+            identifier: z (9:11 - 9:12)
+            =: = (9:13 - 9:14)
+            number_literal: 5 (9:15 - 9:16)
+          ;: ; (9:16 - 9:17)
+        binary_expression: i<=SIZE (9:18 - 9:25)
+          identifier: i (9:18 - 9:19)
+          <=: <= (9:19 - 9:21)
+          identifier: SIZE (9:21 - 9:25)
+        ;: ; (9:25 - 9:26)
+        comma_expression: i+1, i++ (9:27 - 9:35)
+          binary_expression: i+1 (9:27 - 9:30)
+            identifier: i (9:27 - 9:28)
+            +: + (9:28 - 9:29)
+            number_literal: 1 (9:29 - 9:30)
+          ,: , (9:30 - 9:31)
+          update_expression: i++ (9:32 - 9:35)
+            identifier: i (9:32 - 9:33)
+            ++: ++ (9:33 - 9:35)
+        ): ) (9:35 - 9:36)
         compound_statement: {
-    {
-    (x  = (x + 2));
-    (y  = (y + 2));
-    }
-
-  } (16:21 - 22:4)
-          {: { (16:21 - 16:22)
-          compound_statement: {
-    (x  = (x + 2));
-    (y  = (y + 2));
-    } (17:5 - 20:6)
-            {: { (17:5 - 17:6)
-            expression_statement: (x  = (x + 2)); (18:5 - 18:20)
-              parenthesized_expression: (x  = (x + 2)) (18:5 - 18:19)
-                (: ( (18:5 - 18:6)
-                assignment_expression: x  = (x + 2) (18:6 - 18:18)
-                  identifier: x (18:6 - 18:7)
-                  =: = (18:9 - 18:10)
-                  parenthesized_expression: (x + 2) (18:11 - 18:18)
-                    (: ( (18:11 - 18:12)
-                    binary_expression: x + 2 (18:12 - 18:17)
-                      identifier: x (18:12 - 18:13)
-                      +: + (18:14 - 18:15)
-                      number_literal: 2 (18:16 - 18:17)
-                    ): ) (18:17 - 18:18)
-                ): ) (18:18 - 18:19)
-              ;: ; (18:19 - 18:20)
-            expression_statement: (y  = (y + 2)); (19:5 - 19:20)
-              parenthesized_expression: (y  = (y + 2)) (19:5 - 19:19)
-                (: ( (19:5 - 19:6)
-                assignment_expression: y  = (y + 2) (19:6 - 19:18)
-                  identifier: y (19:6 - 19:7)
-                  =: = (19:9 - 19:10)
-                  parenthesized_expression: (y + 2) (19:11 - 19:18)
-                    (: ( (19:11 - 19:12)
-                    binary_expression: y + 2 (19:12 - 19:17)
-                      identifier: y (19:12 - 19:13)
-                      +: + (19:14 - 19:15)
-                      number_literal: 2 (19:16 - 19:17)
-                    ): ) (19:17 - 19:18)
-                ): ) (19:18 - 19:19)
-              ;: ; (19:19 - 19:20)
-            }: } (20:5 - 20:6)
-          }: } (22:3 - 22:4)
-      if_statement: if ( (x == 4) )
-{;
- assert( (y != 0) );
-} (24:1 - 27:2)
-        if: if (24:1 - 24:3)
-        parenthesized_expression: ( (x == 4) ) (24:4 - 24:16)
-          (: ( (24:4 - 24:5)
-          parenthesized_expression: (x == 4) (24:6 - 24:14)
-            (: ( (24:6 - 24:7)
-            binary_expression: x == 4 (24:7 - 24:13)
-              identifier: x (24:7 - 24:8)
-              ==: == (24:9 - 24:11)
-              number_literal: 4 (24:12 - 24:13)
-            ): ) (24:13 - 24:14)
-          ): ) (24:15 - 24:16)
-        compound_statement: {;
- assert( (y != 0) );
-} (25:1 - 27:2)
-          {: { (25:1 - 25:2)
-          expression_statement: ; (25:2 - 25:3)
-            ;: ; (25:2 - 25:3)
-          expression_statement: assert( (y != 0) ); (26:2 - 26:21)
-            call_expression: assert( (y != 0) ) (26:2 - 26:20)
-              identifier: assert (26:2 - 26:8)
-              argument_list: ( (y != 0) ) (26:8 - 26:20)
-                (: ( (26:8 - 26:9)
-                parenthesized_expression: (y != 0) (26:10 - 26:18)
-                  (: ( (26:10 - 26:11)
-                  binary_expression: y != 0 (26:11 - 26:17)
-                    identifier: y (26:11 - 26:12)
-                    !=: != (26:13 - 26:15)
-                    number_literal: 0 (26:16 - 26:17)
-                  ): ) (26:17 - 26:18)
-                ): ) (26:19 - 26:20)
-            ;: ; (26:20 - 26:21)
-          }: } (27:1 - 27:2)
-      }: } (29:1 - 29:2)
+    sn = sn + a;
+  } (9:37 - 11:4)
+          {: { (9:37 - 9:38)
+          expression_statement: sn = sn + a; (10:5 - 10:17)
+            assignment_expression: sn = sn + a (10:5 - 10:16)
+              identifier: sn (10:5 - 10:7)
+              =: = (10:8 - 10:9)
+              binary_expression: sn + a (10:10 - 10:16)
+                identifier: sn (10:10 - 10:12)
+                +: + (10:13 - 10:14)
+                identifier: a (10:15 - 10:16)
+            ;: ; (10:16 - 10:17)
+          }: } (11:3 - 11:4)
+      compound_statement: {;
+ assert(sn==SIZE*a || sn == 0);
+} (12:3 - 14:2)
+        {: { (12:3 - 12:4)
+        expression_statement: ; (12:4 - 12:5)
+          ;: ; (12:4 - 12:5)
+        expression_statement: assert(sn==SIZE*a || sn == 0); (13:2 - 13:32)
+          call_expression: assert(sn==SIZE*a || sn == 0) (13:2 - 13:31)
+            identifier: assert (13:2 - 13:8)
+            argument_list: (sn==SIZE*a || sn == 0) (13:8 - 13:31)
+              (: ( (13:8 - 13:9)
+              binary_expression: sn==SIZE*a || sn == 0 (13:9 - 13:30)
+                binary_expression: sn==SIZE*a (13:9 - 13:19)
+                  identifier: sn (13:9 - 13:11)
+                  ==: == (13:11 - 13:13)
+                  binary_expression: SIZE*a (13:13 - 13:19)
+                    identifier: SIZE (13:13 - 13:17)
+                    *: * (13:17 - 13:18)
+                    identifier: a (13:18 - 13:19)
+                ||: || (13:20 - 13:22)
+                binary_expression: sn == 0 (13:23 - 13:30)
+                  identifier: sn (13:23 - 13:25)
+                  ==: == (13:26 - 13:28)
+                  number_literal: 0 (13:29 - 13:30)
+              ): ) (13:30 - 13:31)
+          ;: ; (13:31 - 13:32)
+        }: } (14:1 - 14:2)
+      }: } (16:1 - 16:2)

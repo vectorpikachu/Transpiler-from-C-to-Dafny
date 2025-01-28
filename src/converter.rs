@@ -1,3 +1,5 @@
+use std::vec;
+
 use tree_sitter::{Node, Tree};
 
 use crate::{context::Context, dafny_ast::*};
@@ -86,14 +88,12 @@ fn parse_global_var(node: &Node, context: &mut Context, source: &str) -> Option<
     }
 }
 
-// TODO: Parse Macros
 fn parse_marcro(node: &Node, context: &mut Context, source: &str) {
     let id = node.child(1).unwrap();
     let id = id.utf8_text(source.as_bytes()).expect("Error parsing macro id").trim();
     let val = node.child(2).unwrap();
     let val = val.utf8_text(source.as_bytes()).expect("Error parsing macro val").trim();
     context.insert_macro(id.to_string(), val.to_string());
-    
 }
 
 /// 解析 类型
@@ -310,6 +310,13 @@ fn parse_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<St
         }
         "continue_statement" => {
             vec![Stmt::Continue]
+        }
+        "for_statement" => {
+            let stmt = parse_for_stmt(&node, context, source);
+            match stmt {
+                Some(stmt) => stmt,
+                None => vec![],
+            }
         }
         _ => vec![], // TODO: Parse other statements
     };
@@ -581,6 +588,93 @@ fn parse_while_stmt(node: &Node, context: &mut Context, source: &str) -> Option<
     None
 }
 
+fn parse_for_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
+    /*
+     * for_statement
+     * ├── for : for
+     * ├── ( : (
+     * ├── assignment_satement : ... can't be empty 
+     * │   ├── ...
+     * │   └── ; : ;
+     * ├── binary_expression : ... can be empty
+     * ├── ; : ;
+     * ├── update_expression : ... can be empty
+     * ├── ) : )
+     * └── compound_statement : ...
+     */
+
+    let mut init_stmt = vec![];
+    let mut cond = vec![];
+    let mut update_stmt = vec![];
+    let mut body = vec![];
+
+    let mut counter = 0;
+    for child in node.children(&mut node.walk()) {
+        if child.kind() == ";" {
+            counter += 1;
+            continue;
+        }
+        if child.kind() == "(" || child.kind() == "for" {
+            continue;
+        }
+        if child.kind() == ")" {
+            counter += 1;
+            continue;
+        }
+        if counter == 0 {
+            let stmt = parse_stmt(&child, context, source);
+            if stmt.is_some() {
+                init_stmt.extend(stmt.unwrap());
+            }
+            counter += 1;
+        } else if counter == 1 {
+            println!("cond: {:?}, {:?}", child, child.kind());
+            let cond_exp = parse_expr(&child, context, source);
+
+            if cond_exp.is_none() {
+                cond.push(Expr::Primary(
+                    PrimaryExpr::Literal(Literal::Boolean(true)),
+                    Type::Bool,
+                ));
+                continue;
+            }
+            println!("cond_exp: {:?}", cond_exp);
+            cond.push(cond_exp.unwrap());
+        } else if counter == 2 {
+            let stmt = parse_expr_stmt(&child, context, source);
+            if stmt.is_some() {
+                update_stmt.extend(stmt.unwrap());
+            }
+        } else if counter == 3 {
+            let stmt = parse_stmt(&child, context, source);
+            if stmt.is_some() {
+                body.extend(stmt.unwrap());
+            }
+        }
+    }
+
+    body.extend(update_stmt);
+
+    let for_stmt = Stmt::WhileLoop(
+        WhileLoop { 
+            cond: cond[0].clone(),
+            invariants: vec![],
+            decreases: vec![Expr::Primary(
+                PrimaryExpr::Literal(Literal::Star),
+                Type::Star,
+            )],
+            block: Block {
+                stmts: body,
+            },
+        }
+    );
+
+    let mut stmts = vec![];
+    stmts.extend(init_stmt);
+    stmts.push(for_stmt);
+    Some(stmts)
+}
+
 /// 解析 if 语句
 /// if: if 0
 /// parenthesized_expression: (
@@ -594,9 +688,6 @@ fn parse_if_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec
     } else {
         None
     };
-
-    println!("请注意看cond: {:?} -> {:?}", node.child(1), cond);
-    println!("请注意看then_body: {:?}", then_body);
 
     if cond.is_some() && then_body.is_some() {
         let if_stmt = Stmt::IfElse(IfElse {
@@ -666,8 +757,8 @@ fn parse_call_statement(node: &Node, context: &mut Context, source: &str) -> Opt
 }
 
 // TODO: Parse expressions
+// Don't parse the comma expression, I don't know the best way to do it
 fn parse_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> {
-    println!("我们的表达式类型是: {:?}", node.kind());
     let exp = match node.kind() {
         "parenthesized_expression" => parse_expr(&node.child(1).unwrap(), context, source),
         "binary_expression" => parse_binary_expr(node, context, source),
@@ -786,12 +877,13 @@ fn parse_unary_expr(node: &Node, context: &mut Context, source: &str) -> Option<
 fn parse_binary_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> {
     let lhs = parse_expr(&node.child(0).unwrap(), context, source);
     let rhs = parse_expr(&node.child(2).unwrap(), context, source);
+    println!("这里是lhs: {:?}, rhs: {:?}", lhs, rhs);
     if lhs.is_none() || rhs.is_none() {
         println!("Error: parse_binary_expr {:?} {:?}", lhs, rhs);
         return None;
     }
     let op = node.child(1).unwrap();
-    println!("我们的运算符是op: {:?}", op);
+    println!("op: {:?}", op.kind());
     let lhs = lhs.unwrap();
     let rhs = rhs.unwrap();
     let exp = match op.kind() {
@@ -883,6 +975,8 @@ fn parse_binary_expr(node: &Node, context: &mut Context, source: &str) -> Option
             return None;
         }
     };
+
+    println!("二元运算式子exp: {:?}", exp);
     Some(exp)
 }
 
