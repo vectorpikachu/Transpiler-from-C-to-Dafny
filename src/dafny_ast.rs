@@ -133,6 +133,9 @@ pub fn max_ty(t1: Type, t2: Type) -> Type {
     if t1 == t2 {
         return t1;
     }
+    if t1 == Type::Number || t2 == Type::Number {
+        return Type::Number;
+    }
     if t1 == Type::Int || t2 == Type::Int {
         return Type::Int;
     }

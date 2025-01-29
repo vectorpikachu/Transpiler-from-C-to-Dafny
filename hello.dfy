@@ -17,7 +17,7 @@ class CProgram {
       decreases *
     {
       v := *;
-      s := (s + v);
+      s := (s + v as bv32);
       i := (i + 1);
     }
     if (s < v as bv32) {

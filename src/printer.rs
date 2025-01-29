@@ -248,43 +248,45 @@ impl DafnyPrinter {
             }
         }
     }
+
+    fn print_binary(lhs: &Expr, rhs: &Expr, op: &str) -> String {
+        let lhs_ty = lhs.get_type();
+        let rhs_ty = rhs.get_type();
+        let target_ty = max_ty(lhs_ty.clone(), rhs_ty.clone());
+        let mut lhs_str = Self::print_expr(lhs);
+        if lhs_ty != target_ty && target_ty != Type::Number {
+            lhs_str.push_str(&format!(" as {}", Self::print_type(&target_ty)));
+        }
+        let mut rhs_str = Self::print_expr(rhs);
+        if rhs_ty != target_ty && target_ty != Type::Number {
+            rhs_str.push_str(&format!(" as {}", Self::print_type(&target_ty)));
+        }
+        format!("({} {} {})", lhs_str, op, rhs_str)
+    }
     fn print_expr(expr: &Expr) -> String {
         match expr {
-            Expr::LogicalOr(lhs, rhs, target_ty) => Self::print_logical(lhs, rhs, "||"),
+            Expr::LogicalOr(lhs, rhs, _) => Self::print_logical(lhs, rhs, "||"),
             Expr::LogicalAnd(lhs, rhs, _) => Self::print_logical(lhs, rhs, "&&"),
-            Expr::Equality(op, lhs, rhs, _) => format!(
-                "({} {} {})",
-                Self::print_expr(lhs),
+            Expr::Equality(op, lhs, rhs, _) => {
                 match op {
-                    EqualityOp::Eq => "==",
-                    EqualityOp::Ne => "!=",
-                },
-                Self::print_expr(rhs)
-            ),
+                    EqualityOp::Eq => Self::print_binary(lhs, rhs, "=="),
+                    EqualityOp::Ne => Self::print_binary(lhs, rhs, "!="),
+                }
+            }
             Expr::Primary(primary, _) => Self::print_primary_expr(primary),
             // TODO: Add Binary Type Conversion
             Expr::Additive(op, lhs, rhs, _) => {
-                format!(
-                    "({} {} {})",
-                    Self::print_expr(lhs),
-                    match op {
-                        AdditiveOp::Add => "+",
-                        AdditiveOp::Sub => "-",
-                    },
-                    Self::print_expr(rhs)
-                )
+                match op {
+                    AdditiveOp::Add => Self::print_binary(lhs, rhs, "+"),
+                    AdditiveOp::Sub => Self::print_binary(lhs, rhs, "-"),
+                }
             }
             Expr::Mult(op, lhs, rhs, _) => {
-                format!(
-                    "({} {} {})",
-                    Self::print_expr(lhs),
-                    match op {
-                        MultOp::Mul => "*",
-                        MultOp::Div => "/",
-                        MultOp::Mod => "%",
-                    },
-                    Self::print_expr(rhs)
-                )
+                match op {
+                    MultOp::Mul => Self::print_binary(lhs, rhs, "*"),
+                    MultOp::Div => Self::print_binary(lhs, rhs, "/"),
+                    MultOp::Mod => Self::print_binary(lhs, rhs, "%"),
+                }
             }
             Expr::Unary(op, expr, _) => {
                 if expr.get_type() != Type::Bool {
@@ -322,29 +324,10 @@ impl DafnyPrinter {
                 ShiftOp::Shr => format!("({} >> {})", Self::print_expr(lhs), Self::print_expr(rhs)),
             },
             Expr::Comparison(op, lhs, rhs, _) => match op {
-                ComparisonOp::Lt => {
-                    let lhs_ty = lhs.get_type();
-                    let rhs_ty = rhs.get_type();
-                    let target_ty = max_ty(lhs_ty, rhs_ty);
-                    let mut lhs_str = Self::print_expr(lhs);
-                    if lhs.get_type() != target_ty {
-                        lhs_str.push_str(&format!(" as {}", Self::print_type(&target_ty)));
-                    }
-                    let mut rhs_str = Self::print_expr(rhs);
-                    if rhs.get_type() != target_ty {
-                        rhs_str.push_str(&format!(" as {}", Self::print_type(&target_ty)));
-                    }
-                    format!("({} < {})", lhs_str, rhs_str)
-                }
-                ComparisonOp::Gt => {
-                    format!("({} > {})", Self::print_expr(lhs), Self::print_expr(rhs))
-                }
-                ComparisonOp::Le => {
-                    format!("({} <= {})", Self::print_expr(lhs), Self::print_expr(rhs))
-                }
-                ComparisonOp::Ge => {
-                    format!("({} >= {})", Self::print_expr(lhs), Self::print_expr(rhs))
-                }
+                ComparisonOp::Lt => Self::print_binary(lhs, rhs, "<"),
+                ComparisonOp::Gt => Self::print_binary(lhs, rhs, ">"),
+                ComparisonOp::Le => Self::print_binary(lhs, rhs, "<="),
+                ComparisonOp::Ge => Self::print_binary(lhs, rhs, ">="),
             },
             Expr::IfThenElse(cond, then_expr, else_expr, _) => {
                 format!(
