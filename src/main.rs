@@ -21,7 +21,7 @@ use crate::printer::*;
 fn main() -> Result<()> {
 
     let matches = Command::new("C-parser")
-        .version("1.0")
+        .version("0.1.0")
         .about("Parses a C file using tree-sitter and outputs the syntax tree")
         .arg(
             Arg::new("input")
@@ -68,9 +68,21 @@ fn main() -> Result<()> {
     let mut context = Context::new();
     let program = convert(tree, &mut context, &c_code);
 
+    let predef = r"
+function to_bv32(n: int): bv32
+  requires -0x80000000 <= n < 0x80000000
+{
+  if n >= 0 then
+    n as bv32
+  else
+    (n + 0x100000000) as bv32  // 转换为补码形式
+}
+
+";
+
     let dafny_code = DafnyPrinter::print_program(&program);
-    println!("{}", dafny_code);
-    write!(output, "{}", dafny_code)?;
+    println!("{}{}", predef, dafny_code);
+    write!(output, "{}{}", predef, dafny_code)?;
 
     println!("Hello, world!");
     Ok(())

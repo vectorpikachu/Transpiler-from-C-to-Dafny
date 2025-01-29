@@ -1,5 +1,7 @@
 use std::cmp::max;
 
+use tree_sitter::ffi::TSSymbolType;
+
 #[derive(Debug, Clone)]
 pub struct Program {
     pub declarations: Vec<Declaration>,
@@ -278,9 +280,19 @@ pub struct Assign {
 
 #[derive(Debug, Clone)]
 pub enum Lhs {
-    Identifier(String),
+    Identifier(String, Type),
     MemberAccess(Box<Expr>, String),
     Index(Box<Expr>, Box<Expr>),
+}
+
+impl Lhs {
+    pub fn get_type(&self) -> Type {
+        match self {
+            Lhs::Identifier(_, ty) => ty.clone(),
+            Lhs::MemberAccess(_, _) => Type::Star,
+            Lhs::Index(_, _) => Type::Star,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

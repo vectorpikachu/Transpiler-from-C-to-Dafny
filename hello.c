@@ -1,32 +1,20 @@
-// Source: data/benchmarks/sv-benchmarks/loop-invariants/linear-inequality-inv-a.c
+// Source: data/benchmarks/sv-benchmarks/loops-crafted-1/sum_natnum.c
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
-extern unsigned char unknown_uchar(void);
+
+int SIZE = 40000; 
 
 int main() {
-  unsigned char n = unknown_uchar();
-  if (n == 0) {
-    return 0;
+  int i;
+  unsigned long long sum;
+  i = 0, sum =0; 
+  while(i< SIZE){ 
+      i = i + 1; 
+      sum += i;
   }
-  unsigned char v = 0;
-  unsigned int  s = 0;
-  unsigned int  i = 0;
-  while (i < n) {
-    v = unknown_uchar();
-    s += v;
-    ++i;
-  }
-  if (s < v) {
-    {; 
-//@ assert(\false);
-};
-    return 1;
-  }
-  if (s > 65025) {
-    {; 
-//@ assert(\false);
-};
-    return 1;
-  }
+  {;
+//@ assert( sum == ((SIZE *(SIZE+1))/2));
+}
+
   return 0;
 }

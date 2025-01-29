@@ -1,33 +1,34 @@
+
+function to_bv32(n: int): bv32
+  requires -0x80000000 <= n < 0x80000000
+{
+  if n >= 0 then
+    n as bv32
+  else
+    (n + 0x100000000) as bv32  // 转换为补码形式
+}
+
 class CProgram {
+  var SIZE: int
   constructor(){
+    SIZE := 40000;
   }
   method main() returns (ret: int)
     requires true
     decreases *
     modifies this
   {
-    var n : bv8 := *;
-    if (n == 0) {
-      return 0;
-    }
-    var v : bv8 := 0;
-    var s : bv32 := 0;
-    var i : bv32 := 0;
-    while (i < n as bv32) 
+    var i : int := *;
+    var sum : bv64 := *;
+    i := 0;
+    sum := 0;
+    while (i < SIZE) 
       decreases *
     {
-      v := *;
-      s := (s + v as bv32);
       i := (i + 1);
+      sum := to_bv32(sum as int + i) as bv64;
     }
-    if (s < v as bv32) {
-      assert(false);
-      return 1;
-    }
-    if (s > 65025) {
-      assert(false);
-      return 1;
-    }
+    assert((sum == ((SIZE * (SIZE + 1)) / 2) as bv64));
     return 0;
   }
 

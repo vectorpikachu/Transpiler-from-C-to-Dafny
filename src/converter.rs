@@ -109,6 +109,7 @@ fn parse_type(node: &Node, context: &mut Context, source: &str) -> Option<Type> 
                 "_Bool" => Some(Type::Bool), // 处理 _Bool 类型
                 "bool" => Some(Type::Bool),
                 "unsigned short" => Some(Type::Bv(16)),
+                "unsigned long long" => Some(Type::Bv(64)),
                 "float" => Some(Type::Real), // 处理 float 类型, float 的溢出也是一个 UB.
                 _ => {
                     // 处理其他类型
@@ -365,12 +366,12 @@ fn parse_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<St
 /// 生成构造函数
 fn generate_constructor(vars: &Vec<FieldDecl>, context: &Context, source: &str) -> ConstructorDecl {
     let modify_expr = Expr::Primary(PrimaryExpr::Literal(Literal::This), Type::This);
-
     let mut stmts = vec![];
     for var in vars {
+        let var_ty = var.type_.clone();
         if var.init.is_some() {
             let stmt = Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(var.id.to_string()),
+                lhs: Lhs::Identifier(var.id.to_string(), var_ty.clone()),
                 expr: var.init.clone().unwrap(),
             });
             stmts.push(stmt);
@@ -380,7 +381,7 @@ fn generate_constructor(vars: &Vec<FieldDecl>, context: &Context, source: &str) 
                 var.type_.clone(),
             );
             let stmt = Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(var.id.to_string()),
+                lhs: Lhs::Identifier(var.id.to_string(), var_ty.clone()),
                 expr: zero_expr,
             });
             stmts.push(stmt);
@@ -530,33 +531,36 @@ fn parse_assign_statement(node: &Node, context: &mut Context, source: &str) -> O
         ),
     };
 
+    let var_ty = context.lookup_var(&id_name).unwrap().clone();
     let assign_op = node.child(1).unwrap().kind(); // =, +=, -=, *=, /=, %=, &=, |=, ^=, <<=, >>=
     match assign_op {
         "=" => {
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string()),
+                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
                 expr: expr,
             }));
         }
         "+=" => {
             let ty = context.lookup_var(&id_name).unwrap().clone();
+            let expr_ty = max_ty(ty.clone(), expr.get_type().clone());
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string()),
+                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
                 expr: Expr::Additive(
                     AdditiveOp::Add,
                     Box::new(Expr::Primary(
                         PrimaryExpr::Identifier(id_name.to_string()),
                         ty.clone(),
                     )),
-                    Box::new(expr),
-                    ty.clone(),
+                    Box::new(expr.clone()),
+                    expr_ty,
                 ),
             }));
         }
         "-=" => {
             let ty = context.lookup_var(&id_name).unwrap().clone();
+            let expr_ty = max_ty(ty.clone(), expr.get_type().clone());
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string()),
+                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
                 expr: Expr::Additive(
                     AdditiveOp::Sub,
                     Box::new(Expr::Primary(
@@ -564,14 +568,15 @@ fn parse_assign_statement(node: &Node, context: &mut Context, source: &str) -> O
                         ty.clone(),
                     )),
                     Box::new(expr),
-                    ty.clone(),
+                    expr_ty,
                 ),
             }));
         }
         "*=" => {
             let ty = context.lookup_var(&id_name).unwrap().clone();
+            let expr_ty = max_ty(ty.clone(), expr.get_type().clone());
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string()),
+                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
                 expr: Expr::Mult(
                     MultOp::Mul,
                     Box::new(Expr::Primary(
@@ -579,14 +584,15 @@ fn parse_assign_statement(node: &Node, context: &mut Context, source: &str) -> O
                         ty.clone(),
                     )),
                     Box::new(expr),
-                    ty.clone(),
+                    expr_ty,
                 ),
             }));
         }
         "/=" => {
             let ty = context.lookup_var(&id_name).unwrap().clone();
+            let expr_ty = max_ty(ty.clone(), expr.get_type().clone());
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string()),
+                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
                 expr: Expr::Mult(
                     MultOp::Div,
                     Box::new(Expr::Primary(
@@ -594,14 +600,15 @@ fn parse_assign_statement(node: &Node, context: &mut Context, source: &str) -> O
                         ty.clone(),
                     )),
                     Box::new(expr),
-                    ty.clone(),
+                    expr_ty,
                 ),
             }));
         }
         "%=" => {
             let ty = context.lookup_var(&id_name).unwrap().clone();
+            let expr_ty = max_ty(ty.clone(), expr.get_type().clone());
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string()),
+                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
                 expr: Expr::Mult(
                     MultOp::Mod,
                     Box::new(Expr::Primary(
@@ -609,21 +616,22 @@ fn parse_assign_statement(node: &Node, context: &mut Context, source: &str) -> O
                         ty.clone(),
                     )),
                     Box::new(expr),
-                    ty.clone(),
+                    expr_ty,
                 ),
             }));
         }
         "&=" => {
             let ty = context.lookup_var(&id_name).unwrap().clone();
+            let expr_ty = max_ty(ty.clone(), expr.get_type().clone());
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string()),
+                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
                 expr: Expr::BitwiseAnd(
                     Box::new(Expr::Primary(
                         PrimaryExpr::Identifier(id_name.to_string()),
                         ty.clone(),
                     )),
                     Box::new(expr),
-                    ty.clone(),
+                    expr_ty,
                 ),
             }));
         }
@@ -631,7 +639,7 @@ fn parse_assign_statement(node: &Node, context: &mut Context, source: &str) -> O
     } 
 
     Some(Stmt::Assign(Assign {
-        lhs: Lhs::Identifier(id_name.to_string()),
+        lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
         expr: expr,
     }))
 }
@@ -666,7 +674,7 @@ fn parse_update_statement(node: &Node, context: &mut Context, source: &str) -> O
 
     match op.kind() {
         "++" => stmts.push(Stmt::Assign(Assign {
-            lhs: Lhs::Identifier(id.to_string()),
+            lhs: Lhs::Identifier(id.to_string(), ty.clone()),
             expr: Expr::Additive(
                 AdditiveOp::Add,
                 Box::new(Expr::Primary(
@@ -681,7 +689,7 @@ fn parse_update_statement(node: &Node, context: &mut Context, source: &str) -> O
             ),
         })),
         "--" => stmts.push(Stmt::Assign(Assign {
-            lhs: Lhs::Identifier(id.to_string()),
+            lhs: Lhs::Identifier(id.to_string(), ty.clone()),
             expr: Expr::Additive(
                 AdditiveOp::Sub,
                 Box::new(Expr::Primary(

@@ -261,33 +261,35 @@ impl DafnyPrinter {
         if rhs_ty != target_ty && target_ty != Type::Number {
             rhs_str.push_str(&format!(" as {}", Self::print_type(&target_ty)));
         }
+        println!("我们到底要面对什么呢lhs_ty: {:?}, rhs_ty: {:?}, target_ty: {:?}", lhs_ty, rhs_ty, target_ty);
         format!("({} {} {})", lhs_str, op, rhs_str)
+    }
+
+    fn print_int_to_bv(expr: &Expr, size: u32) -> String {
+        let expr_str = Self::print_expr(expr);
+        if expr.get_type().is_bv() {
+            return expr_str;
+        }
+        format!("to_bv32({})", expr_str)
     }
     fn print_expr(expr: &Expr) -> String {
         match expr {
             Expr::LogicalOr(lhs, rhs, _) => Self::print_logical(lhs, rhs, "||"),
             Expr::LogicalAnd(lhs, rhs, _) => Self::print_logical(lhs, rhs, "&&"),
-            Expr::Equality(op, lhs, rhs, _) => {
-                match op {
-                    EqualityOp::Eq => Self::print_binary(lhs, rhs, "=="),
-                    EqualityOp::Ne => Self::print_binary(lhs, rhs, "!="),
-                }
-            }
+            Expr::Equality(op, lhs, rhs, _) => match op {
+                EqualityOp::Eq => Self::print_binary(lhs, rhs, "=="),
+                EqualityOp::Ne => Self::print_binary(lhs, rhs, "!="),
+            },
             Expr::Primary(primary, _) => Self::print_primary_expr(primary),
-            // TODO: Add Binary Type Conversion
-            Expr::Additive(op, lhs, rhs, _) => {
-                match op {
-                    AdditiveOp::Add => Self::print_binary(lhs, rhs, "+"),
-                    AdditiveOp::Sub => Self::print_binary(lhs, rhs, "-"),
-                }
-            }
-            Expr::Mult(op, lhs, rhs, _) => {
-                match op {
-                    MultOp::Mul => Self::print_binary(lhs, rhs, "*"),
-                    MultOp::Div => Self::print_binary(lhs, rhs, "/"),
-                    MultOp::Mod => Self::print_binary(lhs, rhs, "%"),
-                }
-            }
+            Expr::Additive(op, lhs, rhs, _) => match op {
+                AdditiveOp::Add => Self::print_binary(lhs, rhs, "+"),
+                AdditiveOp::Sub => Self::print_binary(lhs, rhs, "-"),
+            },
+            Expr::Mult(op, lhs, rhs, _) => match op {
+                MultOp::Mul => Self::print_binary(lhs, rhs, "*"),
+                MultOp::Div => Self::print_binary(lhs, rhs, "/"),
+                MultOp::Mod => Self::print_binary(lhs, rhs, "%"),
+            },
             Expr::Unary(op, expr, _) => {
                 if expr.get_type() != Type::Bool {
                     if op == &UnaryOp::Not {
@@ -309,15 +311,21 @@ impl DafnyPrinter {
                     Self::print_expr(expr)
                 )
             }
-            // TODO: add bitwise type conversion
+            // TODO: add bitwise type conversion, and fit any bits 
             Expr::BitwiseAnd(lhs, rhs, _) => {
-                format!("({} & {})", Self::print_expr(lhs), Self::print_expr(rhs))
+                let lhs = Self::print_int_to_bv(lhs, 32);
+                let rhs = Self::print_int_to_bv(rhs, 32);
+                format!("({} & {})", lhs, rhs)
             }
             Expr::BitwiseOr(lhs, rhs, _) => {
-                format!("({} | {})", Self::print_expr(lhs), Self::print_expr(rhs))
+                let lhs = Self::print_int_to_bv(lhs, 32);
+                let rhs = Self::print_int_to_bv(rhs, 32);
+                format!("({} | {})", lhs, rhs)
             }
             Expr::BitwiseXor(lhs, rhs, _) => {
-                format!("({} ^ {})", Self::print_expr(lhs), Self::print_expr(rhs))
+                let lhs = Self::print_int_to_bv(lhs, 32);
+                let rhs = Self::print_int_to_bv(rhs, 32);
+                format!("({} ^ {})", lhs, rhs)
             }
             Expr::Shift(op, lhs, rhs, _) => match op {
                 ShiftOp::Shl => format!("({} << {})", Self::print_expr(lhs), Self::print_expr(rhs)),
@@ -455,17 +463,30 @@ impl DafnyPrinter {
         result
     }
 
+    // TODO: add type of identifiers
     fn print_assign(assign: &Assign) -> String {
-        format!(
-            "{} := {};",
-            Self::print_lhs(&assign.lhs),
-            Self::print_expr(&assign.expr)
-        )
+        let var_ty = assign.lhs.get_type();
+        let expr_ty = assign.expr.get_type();
+        println!("当前的赋值语句, {:?} var_ty: {:?}, expr_ty: {:?}", assign.lhs, var_ty, expr_ty);
+        if var_ty != expr_ty && expr_ty != Type::Star && expr_ty != Type::Number {
+            format!(
+                "{} := {} as {};",
+                Self::print_lhs(&assign.lhs),
+                Self::print_expr(&assign.expr),
+                Self::print_type(&var_ty)
+            )
+        } else {
+            format!(
+                "{} := {};",
+                Self::print_lhs(&assign.lhs),
+                Self::print_expr(&assign.expr)
+            )
+        }
     }
 
     fn print_lhs(lhs: &Lhs) -> String {
         match lhs {
-            Lhs::Identifier(name) => name.clone(),
+            Lhs::Identifier(name, _) => name.clone(),
             Lhs::MemberAccess(object, field) => format!("{}.{}", Self::print_expr(object), field),
             Lhs::Index(array, index) => {
                 format!("{}[{}]", Self::print_expr(array), Self::print_expr(index))
