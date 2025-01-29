@@ -429,8 +429,6 @@ fn parse_declaration(node: &Node, context: &mut Context, source: &str) -> Option
             continue;
         }
 
-        println!("声明的类型是: {:?}", decl.kind());
-
         if decl.kind() == "array_declarator" {
             // TODO: 处理数组
             unimplemented!();
@@ -1171,9 +1169,6 @@ fn parse_call_expr(node: &Node, context: &mut Context, source: &str) -> Option<E
         return None;
     }
     let func_ty = context.lookup_var(func_name);
-    println!("我的函数不可能是: {:?} func_ty: {:?}", func_name, func_ty);
-
-
     let func_ty = context.lookup_var(func_name).unwrap().clone();
 
     let ret_ty = match func_ty.clone() {

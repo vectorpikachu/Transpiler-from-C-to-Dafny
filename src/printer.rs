@@ -261,7 +261,6 @@ impl DafnyPrinter {
         if rhs_ty != target_ty && target_ty != Type::Number {
             rhs_str.push_str(&format!(" as {}", Self::print_type(&target_ty)));
         }
-        println!("我们到底要面对什么呢lhs_ty: {:?}, rhs_ty: {:?}, target_ty: {:?}", lhs_ty, rhs_ty, target_ty);
         format!("({} {} {})", lhs_str, op, rhs_str)
     }
 
@@ -467,7 +466,6 @@ impl DafnyPrinter {
     fn print_assign(assign: &Assign) -> String {
         let var_ty = assign.lhs.get_type();
         let expr_ty = assign.expr.get_type();
-        println!("当前的赋值语句, {:?} var_ty: {:?}, expr_ty: {:?}", assign.lhs, var_ty, expr_ty);
         if var_ty != expr_ty && expr_ty != Type::Star && expr_ty != Type::Number {
             format!(
                 "{} := {} as {};",
