@@ -1150,6 +1150,7 @@ fn parse_call_expr(node: &Node, context: &mut Context, source: &str) -> Option<E
         || func_name == "unknown" 
         || func_name == "unknown_uint"
         || func_name == "unknown_bool" 
+        || func_name == "unknown_uchar"
         || func_name == "unknown1"
         || func_name == "unknown2"
         || func_name == "unknown3"

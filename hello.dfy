@@ -6,27 +6,28 @@ class CProgram {
     decreases *
     modifies this
   {
-    var x : real := *;
-    assume {:axiom} (x > -1.0);
-    assume {:axiom} (x < 1.0);
-    var exp : real := 1.0;
-    var term : real := 1.0;
-    var count : bv32 := 1;
-    var result : real := (2.0 * (1.0 / (1.0 - x)));
-    var temp : int := *;
-    while 1 != 0
-      decreases *
-      invariant {:axiom} count >= 1
-    {
-      term := (term * (x / count as real));
-      exp := (exp + term);
-      count := (count + 1);
-      temp := *;
-      if (temp == 0) {
-        break;
-      }
+    var n : bv8 := *;
+    if (n == 0) {
+      return 0;
     }
-    assert((result >= exp));
+    var v : bv8 := 0;
+    var s : bv32 := 0;
+    var i : bv32 := 0;
+    while (i < n as bv32) 
+      decreases *
+    {
+      v := *;
+      s := (s + v);
+      i := (i + 1);
+    }
+    if (s < v as bv32) {
+      assert(false);
+      return 1;
+    }
+    if (s > 65025) {
+      assert(false);
+      return 1;
+    }
     return 0;
   }
 

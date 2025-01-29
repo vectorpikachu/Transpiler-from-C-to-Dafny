@@ -1,32 +1,32 @@
-// Source: data/benchmarks/sv-benchmarks/loop-floats-scientific-comp/loop1-1.c
+// Source: data/benchmarks/sv-benchmarks/loop-invariants/linear-inequality-inv-a.c
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
-extern int unknown_int(void);
+extern unsigned char unknown_uchar(void);
 
-int main()
-{
-	float x = unknown_float() ;
-	assume(x > -1.0) ;
-	assume(x < 1.0) ;
-	float exp = 1.0 ;
-	float term = 1.0 ;
-	unsigned int count = 1 ;
-	float result = 2*(1/(1-x)) ;
-	int temp ;
-
-	while(1)
-	{
-		term = term * (x/count) ; 
-		exp = exp + term ;
-		count++ ;
-
-		temp = unknown_int() ;
-		if(temp ==0 ) break ;
-	}
-
-	{;
-//@ assert( result >= exp );
+int main() {
+  unsigned char n = unknown_uchar();
+  if (n == 0) {
+    return 0;
+  }
+  unsigned char v = 0;
+  unsigned int  s = 0;
+  unsigned int  i = 0;
+  while (i < n) {
+    v = unknown_uchar();
+    s += v;
+    ++i;
+  }
+  if (s < v) {
+    {; 
+//@ assert(\false);
+};
+    return 1;
+  }
+  if (s > 65025) {
+    {; 
+//@ assert(\false);
+};
+    return 1;
+  }
+  return 0;
 }
-
-	return 0 ;
-}	

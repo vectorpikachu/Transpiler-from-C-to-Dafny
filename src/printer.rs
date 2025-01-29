@@ -219,9 +219,7 @@ impl DafnyPrinter {
                     None => "void".to_string(),
                 }
             ),
-            _ => {
-                "".to_string()
-            }
+            _ => "".to_string(),
         }
     }
 
@@ -233,15 +231,27 @@ impl DafnyPrinter {
             .join(", ")
     }
 
-    // TODO: I NEED TO ADD A TYPE TARGET HERE
+    fn print_logical(lhs: &Expr, rhs: &Expr, op: &str) -> String {
+        let lhs_str = Self::print_expr(lhs);
+        let rhs_str = Self::print_expr(rhs);
+        if lhs.get_type() != Type::Bool {
+            if rhs.get_type() != Type::Bool {
+                format!("({} != 0 {} {} != 0)", lhs_str, op, rhs_str)
+            } else {
+                format!("({} != 0 {} {})", lhs_str, op, rhs_str)
+            }
+        } else {
+            if rhs.get_type() != Type::Bool {
+                format!("({} {} {} != 0)", lhs_str, op, rhs_str)
+            } else {
+                format!("({} {} {})", lhs_str, op, rhs_str)
+            }
+        }
+    }
     fn print_expr(expr: &Expr) -> String {
         match expr {
-            Expr::LogicalOr(lhs, rhs, _) => {
-                format!("({} || {})", Self::print_expr(lhs), Self::print_expr(rhs))
-            }
-            Expr::LogicalAnd(lhs, rhs, _) => {
-                format!("({} && {})", Self::print_expr(lhs), Self::print_expr(rhs))
-            }
+            Expr::LogicalOr(lhs, rhs, target_ty) => Self::print_logical(lhs, rhs, "||"),
+            Expr::LogicalAnd(lhs, rhs, _) => Self::print_logical(lhs, rhs, "&&"),
             Expr::Equality(op, lhs, rhs, _) => format!(
                 "({} {} {})",
                 Self::print_expr(lhs),
@@ -252,6 +262,7 @@ impl DafnyPrinter {
                 Self::print_expr(rhs)
             ),
             Expr::Primary(primary, _) => Self::print_primary_expr(primary),
+            // TODO: Add Binary Type Conversion
             Expr::Additive(op, lhs, rhs, _) => {
                 format!(
                     "({} {} {})",
@@ -281,6 +292,11 @@ impl DafnyPrinter {
                         return format!("{} == 0", Self::print_expr(expr));
                     }
                 }
+                if expr.get_type() == Type::Bool {
+                    if op == &UnaryOp::Neg {
+                        return format!("if {} then -1 else 0", Self::print_expr(expr));
+                    }
+                }
                 format!(
                     "({} {})",
                     match op {
@@ -291,6 +307,7 @@ impl DafnyPrinter {
                     Self::print_expr(expr)
                 )
             }
+            // TODO: add bitwise type conversion
             Expr::BitwiseAnd(lhs, rhs, _) => {
                 format!("({} & {})", Self::print_expr(lhs), Self::print_expr(rhs))
             }
@@ -306,8 +323,18 @@ impl DafnyPrinter {
             },
             Expr::Comparison(op, lhs, rhs, _) => match op {
                 ComparisonOp::Lt => {
-                    // TODO: Add Type Target here: what target i'm going to meet
-                    format!("({} < {})", Self::print_expr(lhs), Self::print_expr(rhs))
+                    let lhs_ty = lhs.get_type();
+                    let rhs_ty = rhs.get_type();
+                    let target_ty = max_ty(lhs_ty, rhs_ty);
+                    let mut lhs_str = Self::print_expr(lhs);
+                    if lhs.get_type() != target_ty {
+                        lhs_str.push_str(&format!(" as {}", Self::print_type(&target_ty)));
+                    }
+                    let mut rhs_str = Self::print_expr(rhs);
+                    if rhs.get_type() != target_ty {
+                        rhs_str.push_str(&format!(" as {}", Self::print_type(&target_ty)));
+                    }
+                    format!("({} < {})", lhs_str, rhs_str)
                 }
                 ComparisonOp::Gt => {
                     format!("({} > {})", Self::print_expr(lhs), Self::print_expr(rhs))
@@ -465,7 +492,8 @@ impl DafnyPrinter {
 
     fn print_if_else(if_else: &IfElse, indent_level: usize) -> String {
         let mut result = format!("if {} ", Self::print_expr(&if_else.cond));
-        if if_else.cond.get_type() != Type::Bool {
+        let cond_ty = if_else.cond.get_type();
+        if cond_ty != Type::Bool && cond_ty != Type::Star {
             // ? A Simple Type Conversion Here
             result.push_str("!= 0 ");
         }
@@ -483,7 +511,12 @@ impl DafnyPrinter {
     }
 
     fn print_while_loop(while_loop: &WhileLoop, indent_level: usize) -> String {
-        let mut result = format!("while {}\n", Self::print_expr(&while_loop.cond));
+        let mut result = format!("while {} ", Self::print_expr(&while_loop.cond));
+        let cond_ty = while_loop.cond.get_type();
+        if cond_ty != Type::Bool && cond_ty != Type::Star {
+            result.push_str("!= 0 ");
+        }
+        result.push_str("\n");
         if !while_loop.invariants.is_empty() {
             result.push_str(&Self::indent(indent_level + 1));
             result.push_str("invariant ");

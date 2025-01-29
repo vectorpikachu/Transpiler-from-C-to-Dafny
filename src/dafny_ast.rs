@@ -1,3 +1,5 @@
+use std::cmp::max;
+
 #[derive(Debug, Clone)]
 pub struct Program {
     pub declarations: Vec<Declaration>,
@@ -111,6 +113,21 @@ pub enum Type {
     Number, // represents any numeric type
 }
 
+impl Type {
+    pub fn is_bv(&self) -> bool {
+        match self {
+            Type::Bv(_) => true,
+            _ => false,
+        }
+    }
+    pub fn get_bv_token(&self) -> u32 {
+        match self {
+            Type::Bv(token) => *token,
+            _ => panic!("not a bv type"),
+        }
+    }
+}
+
 // TODO: get the max type of two types
 pub fn max_ty(t1: Type, t2: Type) -> Type {
     if t1 == t2 {
@@ -118,6 +135,9 @@ pub fn max_ty(t1: Type, t2: Type) -> Type {
     }
     if t1 == Type::Int || t2 == Type::Int {
         return Type::Int;
+    }
+    if t1.is_bv() && t2.is_bv() {
+        return Type::Bv(max(t1.get_bv_token(), t2.get_bv_token()));
     }
     return Type::Int;
 }
