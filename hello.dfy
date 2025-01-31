@@ -22,13 +22,20 @@ class CProgram {
     var sum : bv64 := *;
     i := 0;
     sum := 0;
+    var x := new int[5];
+    x[0] := 0;
+    x[1] := 1;
+    x[2] := 2;
+    x[3] := 3;
+    x[4] := 4;
+    x[0] := 2;
     while (i < SIZE) 
       decreases *
     {
       i := (i + 1);
-      sum := to_bv32(sum as int + i) as bv64;
+      sum := (sum as int + i) as bv64;
     }
-    assert((sum == ((SIZE * (SIZE + 1)) / 2) as bv64));
+    assert((sum == ((SIZE * (SIZE + 1)) / 2)));
     return 0;
   }
 

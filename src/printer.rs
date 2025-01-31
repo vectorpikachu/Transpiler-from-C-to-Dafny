@@ -431,19 +431,23 @@ impl DafnyPrinter {
                 ));
             }
             Stmt::DeclVar(var) => {
-                if var.init.is_some() {
-                    result.push_str(&format!(
-                        "var {} : {} := {};",
-                        var.id,
-                        Self::print_type(&var.type_),
-                        Self::print_expr(var.init.as_ref().unwrap())
-                    ));
+                if var.type_.is_array() {
+                    result.push_str(&Self::print_array_var(var));
                 } else {
-                    result.push_str(&format!(
-                        "var {} : {} := *;",
-                        var.id,
-                        Self::print_type(&var.type_)
-                    ));
+                    if var.init.is_some() {
+                        result.push_str(&format!(
+                            "var {} : {} := {};",
+                            var.id,
+                            Self::print_type(&var.type_),
+                            Self::print_expr(var.init.as_ref().unwrap())
+                        ));
+                    } else {
+                        result.push_str(&format!(
+                            "var {} : {} := *;",
+                            var.id,
+                            Self::print_type(&var.type_)
+                        ));
+                    }
                 }
             }
             Stmt::Break => {
@@ -459,6 +463,23 @@ impl DafnyPrinter {
                 result.push_str(&format!("assume {{:axiom}} {};", Self::print_expr(expr)));
             }
         }
+        result
+    }
+
+    /// 这个函数只关注 var x := new int[10]; 这种情况
+    /// 关于数组初始化, 直接使用 update_stmt处理掉.
+    fn print_array_var(var: &Var) -> String {
+        let mut result = String::new();
+        let base_ty = var.init.as_ref().unwrap().get_base_type();
+        let dims = var.init.as_ref().unwrap().get_dims();
+        result.push_str(&format!("var {} := new {}[", var.id, Self::print_type(&base_ty)));
+        for dim in dims {
+            result.push_str(&Self::print_expr(&dim));
+            result.push_str(", ");
+        }
+        result.pop();
+        result.pop();
+        result.push_str("];");
         result
     }
 

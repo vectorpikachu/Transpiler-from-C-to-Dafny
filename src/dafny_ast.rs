@@ -128,6 +128,19 @@ impl Type {
             _ => panic!("not a bv type"),
         }
     }
+    pub fn is_array(&self) -> bool {
+        match self {
+            Type::Array(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn get_base_type(&self) -> Type {
+        match self {
+            Type::Array(ty) => *ty.clone(),
+            _ => panic!("not an array type"),
+        }
+    }
 }
 
 // TODO: get the max type of two types
@@ -165,6 +178,7 @@ pub enum Expr {
     Forall(Quantifier, Box<Expr>, Type),
     Exists(Quantifier, Box<Expr>, Type),
     IfThenElse(Box<Expr>, Box<Expr>, Box<Expr>, Type),
+    ArrayInit(Vec<Expr>, Type, Type), // first is base type, second is the whole type
 }
 
 impl Expr {
@@ -185,6 +199,21 @@ impl Expr {
             Expr::Forall(_, _, ty) => ty.clone(),
             Expr::Exists(_, _, ty) => ty.clone(),
             Expr::IfThenElse(_, _, _, ty) => ty.clone(),
+            Expr::ArrayInit(_, _, ty) => ty.clone(),
+        }
+    }
+
+    pub fn get_base_type(&self) -> Type {
+        match self {
+            Expr::ArrayInit(_, base_ty, _) => base_ty.clone(),
+            _ => panic!("not an array init expression"),
+        }
+    }
+
+    pub fn get_dims(&self) -> Vec<Expr> {
+        match self {
+            Expr::ArrayInit(dims, _, _) => dims.clone(),
+            _ => panic!("not an array init expression"),
         }
     }
 }
@@ -250,6 +279,15 @@ pub enum Stmt {
     Continue,
     Assume(Expr),
     Call(Call),
+}
+
+impl Stmt {
+    pub fn get_decl_id(&self) -> String {
+        match self {
+            Stmt::DeclVar(var) => var.id.clone(),
+            _ => panic!("not a declaration statement"),
+        }
+    }
 }
 
 pub fn is_return(stmt: &Stmt) -> bool {

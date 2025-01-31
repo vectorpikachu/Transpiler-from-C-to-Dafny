@@ -4,10 +4,14 @@
 
 int SIZE = 40000; 
 
+
+
 int main() {
   int i;
   unsigned long long sum;
   i = 0, sum =0; 
+  int x[5] = {0,1,2,3,4};
+  x[0] = 2;
   while(i< SIZE){ 
       i = i + 1; 
       sum += i;

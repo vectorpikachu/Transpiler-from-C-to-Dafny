@@ -234,6 +234,7 @@ fn parse_func_params(node: &Node, context: &mut Context, source: &str) -> Option
     for param in func_params.children(&mut node.walk()) {
         match param.kind() {
             "parameter_declaration" => {
+                // TODO: Parse array parameters
                 let param_type = param.child_by_field_name("type")?;
                 let param_type = parse_type(&param_type, context, source)?;
                 let param_name = param.child_by_field_name("declarator")?;
@@ -430,8 +431,11 @@ fn parse_declaration(node: &Node, context: &mut Context, source: &str) -> Option
         }
 
         if decl.kind() == "array_declarator" {
-            // TODO: 处理数组
-            unimplemented!();
+            //? 在此处进入了, 意味着没有初始化列表.
+            let ty = node.child_by_field_name("type")?;
+            let dafny_ty = parse_type(&ty, context, source)?;
+            let ret = parse_array_decl(&decl, context, source, &dafny_ty);
+            return ret;
         }
 
         let mut name = decl.utf8_text(source.as_bytes());
@@ -441,7 +445,21 @@ fn parse_declaration(node: &Node, context: &mut Context, source: &str) -> Option
             let init_value = decl.child_by_field_name("value")?;
             if decl_node.kind() == "array_declarator" {
                 // TODO: 处理数组
-                unimplemented!();
+                let ty = node.child_by_field_name("type")?;
+                let dafny_ty = parse_type(&ty, context, source)?;
+                let stmt = parse_array_decl(&decl_node, context, source, &dafny_ty);
+                if stmt.is_some() {
+                    stmts.extend(stmt.clone().unwrap());
+                }
+                let array_id = stmt.unwrap()[0].get_decl_id();
+                println!("初始化列表为{:?}", init_value);
+                let init_stmts = parse_init_list(&init_value, context, source, &array_id);
+                if init_stmts.is_some() {
+                    stmts.extend(init_stmts.unwrap());
+                }
+                println!("初始化列表为{:?}", stmts);
+
+                return Some(stmts);
             }
             name = decl
                 .child_by_field_name("declarator")?
@@ -471,6 +489,69 @@ fn parse_declaration(node: &Node, context: &mut Context, source: &str) -> Option
     } else {
         Some(stmts)
     }
+}
+
+fn parse_array_decl(node: &Node, context: &mut Context, source: &str, base: &Type) -> Option<Vec<Stmt>> {
+    // let mut stmts = vec![];
+    //? 只需要写成 var a := new T[m, n] -> 自动识别出是array<array<T>>类型的
+    let id = node.child(0).unwrap();
+    let array_name = id.utf8_text(source.as_bytes()).unwrap();
+    let mut dims = vec![];
+    let mut stmts = vec![];
+    let mut dafny_ty = base.clone();
+    for child in node.children(&mut node.walk()) {
+        if child.kind() == "[" || child.kind() == "]" || child.kind() == "identifier" {
+            continue;
+        }
+        println!("我们的数组大小是{:?}", child);
+        let dim = parse_expr(&child, context, source);
+        println!("我们的数组大小是{:?}", dim);
+        if dim.is_some() {
+            dims.push(dim.unwrap());
+        }
+        dafny_ty = Type::Array(Box::new(dafny_ty.clone()));
+    }
+
+    let array_new_expr = Expr::ArrayInit(dims, base.clone(), dafny_ty.clone());
+    stmts.push(Stmt::DeclVar(Var {
+        id: array_name.to_string(),
+        type_: dafny_ty.clone(),
+        init: Some(array_new_expr),
+    }));
+    context.declare_var(array_name.to_string(), dafny_ty.clone());
+    Some(stmts)
+}
+
+
+/// 现在只能处理一维数组
+/// TODO: 需要处理多维数组
+fn parse_init_list(node: &Node, context: &mut Context, source: &str, array_id: &str) -> Option<Vec<Stmt>> {
+    let mut stmts = vec![];
+    let mut counter = 0;
+    let array_type = context.lookup_var(array_id).unwrap().clone();
+    for child in node.children(&mut node.walk()) {
+        if child.kind() == "{" || child.kind() == "}" || child.kind() == "," {
+            continue;
+        }
+        println!("我们的{:?}", child);
+        let expr = parse_expr(&child, context, source);
+        if expr.is_some() {
+            // TODO: Parse init list
+            stmts.push(
+                Stmt::Assign(Assign { 
+                    lhs: Lhs::Index(Box::new(Expr::Primary(PrimaryExpr::Identifier(array_id.to_string()), array_type.clone())), Box::new(Expr::Primary(PrimaryExpr::Literal(Literal::Integer(counter.to_string())), Type::Int))),
+                    expr: expr.unwrap(), })
+            );
+        } else {
+            println!("Error parsing init list: {}", child.kind());
+            return None;
+        }
+        counter += 1;
+    }
+    if stmts.is_empty() {
+        return None;
+    }
+    Some(stmts)
 }
 
 fn parse_expr_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
@@ -512,122 +593,144 @@ fn parse_expr_stmt(node: &Node, context: &mut Context, source: &str) -> Option<V
     Some(stmts)
 }
 
+fn parse_lhs(node: &Node, context: &mut Context, source: &str) -> Option<Lhs> {
+    match node.kind() {
+        "identifier" => {
+            let id_name = node
+                .utf8_text(source.as_bytes())
+                .expect("Failed to get identifier name");
+            let var_ty = context.lookup_var(&id_name).unwrap().clone();
+            Some(Lhs::Identifier(id_name.to_string(), var_ty))
+        }
+        "subscript_expression" => {
+            // TODO: multi-dimensional array
+            let id_name = node
+                .child(0)
+                .unwrap()
+                .utf8_text(source.as_bytes())
+                .expect("Failed to get identifier name");
+            println!("我们的id_name: {:?}", id_name);
+            let var_ty = context.lookup_var(&id_name).unwrap().clone();
+            println!("我们的var_ty: {:?}", var_ty);
+            let index = parse_expr(&node.child(2).unwrap(), context, source);
+            println!("我们的index: {:?}", index);
+            if index.is_some() {
+                Some(Lhs::Index(
+                    Box::new(Expr::Primary(PrimaryExpr::Identifier(id_name.to_string()), var_ty)),
+                    Box::new(index.unwrap()),
+                ))
+            } else {
+                None
+            }
+        }
+        _ => None,
+    }
+}
+
 fn parse_assign_statement(node: &Node, context: &mut Context, source: &str) -> Option<Stmt> {
-    let id = node.child(0).unwrap();
+    let lhs = node.child(0).unwrap();
+    println!("我们的lhs: {:?}", lhs);
+    let lhs_expr = parse_expr(&lhs, context, source);
+    let lhs = parse_lhs(&lhs, context, source);
+    if lhs.is_none() {
+        return None;
+    }
+    let lhs = lhs.unwrap();
     let expr = node.child(2).unwrap();
-
-    let id_name = id
-        .utf8_text(source.as_bytes())
-        .expect("Failed to get identifier name");
-
     let expr = parse_expr(&expr, context, source);
     let expr = match expr {
         Some(expr) => expr,
         None => Expr::Primary(
             PrimaryExpr::Literal(Literal::Integer("0".to_string())),
-            context.lookup_var(&id_name).unwrap().clone(),
+            lhs.get_type().clone(),
         ),
     };
-
-    let var_ty = context.lookup_var(&id_name).unwrap().clone();
+    
+    if lhs_expr.is_none() {
+        return None;
+    }
+    let lhs_expr = lhs_expr.unwrap();
+    
     let assign_op = node.child(1).unwrap().kind(); // =, +=, -=, *=, /=, %=, &=, |=, ^=, <<=, >>=
     match assign_op {
         "=" => {
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
+                lhs: lhs,
                 expr: expr,
             }));
         }
         "+=" => {
-            let ty = context.lookup_var(&id_name).unwrap().clone();
+            let ty = lhs.get_type().clone();
             let expr_ty = max_ty(ty.clone(), expr.get_type().clone());
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
+                lhs: lhs,
                 expr: Expr::Additive(
                     AdditiveOp::Add,
-                    Box::new(Expr::Primary(
-                        PrimaryExpr::Identifier(id_name.to_string()),
-                        ty.clone(),
-                    )),
+                    Box::new(lhs_expr),
                     Box::new(expr.clone()),
                     expr_ty,
                 ),
             }));
         }
         "-=" => {
-            let ty = context.lookup_var(&id_name).unwrap().clone();
+            let ty = lhs.get_type().clone();
             let expr_ty = max_ty(ty.clone(), expr.get_type().clone());
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
+                lhs: lhs,
                 expr: Expr::Additive(
                     AdditiveOp::Sub,
-                    Box::new(Expr::Primary(
-                        PrimaryExpr::Identifier(id_name.to_string()),
-                        ty.clone(),
-                    )),
+                    Box::new(lhs_expr),
                     Box::new(expr),
                     expr_ty,
                 ),
             }));
         }
         "*=" => {
-            let ty = context.lookup_var(&id_name).unwrap().clone();
+            let ty = lhs.get_type().clone();
             let expr_ty = max_ty(ty.clone(), expr.get_type().clone());
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
+                lhs: lhs,
                 expr: Expr::Mult(
                     MultOp::Mul,
-                    Box::new(Expr::Primary(
-                        PrimaryExpr::Identifier(id_name.to_string()),
-                        ty.clone(),
-                    )),
+                    Box::new(lhs_expr),
                     Box::new(expr),
                     expr_ty,
                 ),
             }));
         }
         "/=" => {
-            let ty = context.lookup_var(&id_name).unwrap().clone();
+            let ty = lhs.get_type().clone();
             let expr_ty = max_ty(ty.clone(), expr.get_type().clone());
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
+                lhs: lhs,
                 expr: Expr::Mult(
                     MultOp::Div,
-                    Box::new(Expr::Primary(
-                        PrimaryExpr::Identifier(id_name.to_string()),
-                        ty.clone(),
-                    )),
+                    Box::new(lhs_expr),
                     Box::new(expr),
                     expr_ty,
                 ),
             }));
         }
         "%=" => {
-            let ty = context.lookup_var(&id_name).unwrap().clone();
+            let ty = lhs.get_type().clone();
             let expr_ty = max_ty(ty.clone(), expr.get_type().clone());
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
+                lhs: lhs,
                 expr: Expr::Mult(
                     MultOp::Mod,
-                    Box::new(Expr::Primary(
-                        PrimaryExpr::Identifier(id_name.to_string()),
-                        ty.clone(),
-                    )),
+                    Box::new(lhs_expr),
                     Box::new(expr),
                     expr_ty,
                 ),
             }));
         }
         "&=" => {
-            let ty = context.lookup_var(&id_name).unwrap().clone();
+            let ty = lhs.get_type().clone();
             let expr_ty = max_ty(ty.clone(), expr.get_type().clone());
             return Some(Stmt::Assign(Assign {
-                lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
+                lhs: lhs,
                 expr: Expr::BitwiseAnd(
-                    Box::new(Expr::Primary(
-                        PrimaryExpr::Identifier(id_name.to_string()),
-                        ty.clone(),
-                    )),
+                    Box::new(lhs_expr),
                     Box::new(expr),
                     expr_ty,
                 ),
@@ -637,7 +740,7 @@ fn parse_assign_statement(node: &Node, context: &mut Context, source: &str) -> O
     } 
 
     Some(Stmt::Assign(Assign {
-        lhs: Lhs::Identifier(id_name.to_string(), var_ty.clone()),
+        lhs: lhs,
         expr: expr,
     }))
 }
@@ -1009,6 +1112,13 @@ fn parse_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> 
             PrimaryExpr::Literal(Literal::Boolean(true)),
             Type::Bool,
         )),
+        "subscript_expression" => {
+            parse_subscript_expr(node, context, source)
+        }
+        "initializer_list" => {
+            // TODO: Parse initializer list
+            unimplemented!()
+        }
         _ => {
             // TODO: Parse other expressions
             None
@@ -1187,4 +1297,18 @@ fn parse_call_expr(node: &Node, context: &mut Context, source: &str) -> Option<E
         ), func_ty.clone())),
         args,
     ), ret_ty))
+}
+
+fn parse_subscript_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> {
+    let name = node.child(0).unwrap();
+    let name = name.utf8_text(source.as_bytes()).unwrap();
+    let index = parse_expr(&node.child(2).unwrap(), context, source);
+    if index.is_none() {
+        return None;
+    }
+    let index = index.unwrap();
+    let ty = context.lookup_var(name).unwrap().clone();
+    let base_ty = ty.get_base_type();
+
+    Some(Expr::Primary(PrimaryExpr::Index(Box::new(Expr::Primary(PrimaryExpr::Identifier(name.to_string()), ty)), Box::new(index)), base_ty))
 }
