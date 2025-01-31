@@ -1,24 +1,39 @@
-// Source: data/benchmarks/sv-benchmarks/loops-crafted-1/sum_natnum.c
+// Source: data/benchmarks/diffy_cav21_bench/brs1.c
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
+extern int unknown_int(void);
 
-int SIZE = 40000; 
+int N;
 
+int main()
+{
+	N = unknown_int();
+	if(N <= 0) return 1;
 
+	int i;
+	int sum[1];
+	int a[N];
 
-int main() {
-  int i;
-  unsigned long long sum;
-  i = 0, sum =0; 
-  int x[5] = {0,1,2,3,4};
-  x[0] = 2;
-  while(i< SIZE){ 
-      i = i + 1; 
-      sum += i;
-  }
-  {;
-//@ assert( sum == ((SIZE *(SIZE+1))/2));
+	/* Loop_A */  for(i=0; i<N; i++)
+	{
+		if(i%1==0) {
+			a[i] = 1;
+		} else {
+			a[i] = 0;
+		}
+	}
+
+	/* Loop_B */  for(i=0; i<N; i++)
+	{
+		if(i==0) {
+			sum[0] = 0;
+		} else {
+			sum[0] = sum[0] + a[i];
+		}
+	}
+	{;
+//@ assert(sum[0] <= N);
 }
 
-  return 0;
+	return 1;
 }

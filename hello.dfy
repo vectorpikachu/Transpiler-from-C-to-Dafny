@@ -9,34 +9,58 @@ function to_bv32(n: int): bv32
 }
 
 class CProgram {
-  var SIZE: int
+  var N: int
   constructor(){
-    SIZE := 40000;
+    N := 0;
   }
   method main() returns (ret: int)
     requires true
     decreases *
     modifies this
   {
-    var i : int := *;
-    var sum : bv64 := *;
-    i := 0;
-    sum := 0;
-    var x := new int[5];
-    x[0] := 0;
-    x[1] := 1;
-    x[2] := 2;
-    x[3] := 3;
-    x[4] := 4;
-    x[0] := 2;
-    while (i < SIZE) 
-      decreases *
-    {
-      i := (i + 1);
-      sum := (sum as int + i) as bv64;
+    N := *;
+    if (N <= 0) {
+      return 1;
     }
-    assert((sum == ((SIZE * (SIZE + 1)) / 2)));
-    return 0;
+    var i : int := *;
+    var sum := new int[1];
+    var a := new int[N];
+    assert a.Length == N;
+    i := 0;
+    while (i < N) 
+      decreases *
+      invariant 0 <= i <= N
+      invariant a.Length == N
+      invariant forall k : int :: 0 <= k < i ==> a[k] <= 1
+    {
+      assert 0 <= i < N;
+      if ((i % 1) == 0) {
+        assert 0 <= i < N;
+        a[i] := 1;
+        assert a[i] <= 1;
+      } else {
+        a[i] := 0;
+        assert a[i] <= 1;
+      }
+      i := (i + 1);
+    }
+    i := 0;
+    assert forall k : int :: 0 <= k < N ==> a[k] <= 1;
+    while (i < N) 
+      decreases *
+      invariant 0 <= i <= N
+      invariant a.Length == N
+    {
+      
+      if (i == 0) {
+        sum[0] := 0;
+      } else {
+        sum[0] := (sum[0] + a[i]);
+      }
+      i := (i + 1);
+    }
+    assert((sum[0] <= N));
+    return 1;
   }
 
 }

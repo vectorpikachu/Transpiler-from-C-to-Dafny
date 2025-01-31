@@ -319,16 +319,16 @@ pub struct Assign {
 #[derive(Debug, Clone)]
 pub enum Lhs {
     Identifier(String, Type),
-    MemberAccess(Box<Expr>, String),
-    Index(Box<Expr>, Box<Expr>),
+    MemberAccess(Box<Expr>, String, Type),
+    Index(Box<Expr>, Box<Expr>, Type),
 }
 
 impl Lhs {
     pub fn get_type(&self) -> Type {
         match self {
             Lhs::Identifier(_, ty) => ty.clone(),
-            Lhs::MemberAccess(_, _) => Type::Star,
-            Lhs::Index(_, _) => Type::Star,
+            Lhs::MemberAccess(_, _, ty) => Type::Star,
+            Lhs::Index(_, _, ty) => ty.get_base_type(),
         }
     }
 }

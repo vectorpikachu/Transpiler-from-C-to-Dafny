@@ -235,6 +235,7 @@ fn parse_func_params(node: &Node, context: &mut Context, source: &str) -> Option
         match param.kind() {
             "parameter_declaration" => {
                 // TODO: Parse array parameters
+                // 这里的可以有 array_declarator
                 let param_type = param.child_by_field_name("type")?;
                 let param_type = parse_type(&param_type, context, source)?;
                 let param_name = param.child_by_field_name("declarator")?;
@@ -499,8 +500,13 @@ fn parse_array_decl(node: &Node, context: &mut Context, source: &str, base: &Typ
     let mut dims = vec![];
     let mut stmts = vec![];
     let mut dafny_ty = base.clone();
+    let mut is_first = true;
     for child in node.children(&mut node.walk()) {
-        if child.kind() == "[" || child.kind() == "]" || child.kind() == "identifier" {
+        if is_first {
+            is_first = false;
+            continue;
+        }
+        if child.kind() == "[" || child.kind() == "]" {
             continue;
         }
         println!("我们的数组大小是{:?}", child);
@@ -539,7 +545,7 @@ fn parse_init_list(node: &Node, context: &mut Context, source: &str, array_id: &
             // TODO: Parse init list
             stmts.push(
                 Stmt::Assign(Assign { 
-                    lhs: Lhs::Index(Box::new(Expr::Primary(PrimaryExpr::Identifier(array_id.to_string()), array_type.clone())), Box::new(Expr::Primary(PrimaryExpr::Literal(Literal::Integer(counter.to_string())), Type::Int))),
+                    lhs: Lhs::Index(Box::new(Expr::Primary(PrimaryExpr::Identifier(array_id.to_string()), array_type.clone())), Box::new(Expr::Primary(PrimaryExpr::Literal(Literal::Integer(counter.to_string())), Type::Int)), array_type.clone()),
                     expr: expr.unwrap(), })
             );
         } else {
@@ -616,8 +622,9 @@ fn parse_lhs(node: &Node, context: &mut Context, source: &str) -> Option<Lhs> {
             println!("我们的index: {:?}", index);
             if index.is_some() {
                 Some(Lhs::Index(
-                    Box::new(Expr::Primary(PrimaryExpr::Identifier(id_name.to_string()), var_ty)),
+                    Box::new(Expr::Primary(PrimaryExpr::Identifier(id_name.to_string()), var_ty.clone())),
                     Box::new(index.unwrap()),
+                    var_ty
                 ))
             } else {
                 None
@@ -853,6 +860,8 @@ fn parse_for_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Ve
     let mut update_stmt = vec![];
     let mut body = vec![];
 
+    println!("我们的for_stmt: {:?}", node.utf8_text(source.as_bytes()));
+
     let mut counter = 0;
     for child in node.children(&mut node.walk()) {
         if child.kind() == ";" {
@@ -867,14 +876,19 @@ fn parse_for_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Ve
             continue;
         }
         if counter == 0 {
-            let stmt = parse_stmt(&child, context, source);
+            let stmt = if child.kind() == "declaration" {
+                counter += 1;
+                parse_stmt(node, context, source)
+            } else {
+                parse_expr_stmt(&child, context, source)
+            };
+            println!("我们的init_stmt: {:?}", stmt);
             if stmt.is_some() {
                 init_stmt.extend(stmt.unwrap());
             }
-            counter += 1;
         } else if counter == 1 {
             let cond_exp = parse_expr(&child, context, source);
-
+            println!("我们的cond_exp: {:?}", cond_exp);
             if cond_exp.is_none() {
                 cond.push(Expr::Primary(
                     PrimaryExpr::Literal(Literal::Boolean(true)),

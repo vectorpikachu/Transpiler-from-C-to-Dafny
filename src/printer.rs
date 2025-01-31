@@ -344,6 +344,21 @@ impl DafnyPrinter {
                     Self::print_expr(else_expr)
                 )
             }
+            Expr::ArrayInit(dims, base_ty, ty) => {
+                println!("当前的dims: {:?}", dims);
+                let mut dims_str = String::new();
+                for dim in dims {
+                    dims_str += &Self::print_expr(dim);
+                    dims_str += ", ";
+                }
+                dims_str.pop();
+                dims_str.pop();
+                format!(
+                    "new {}[{}]",
+                    Self::print_type(base_ty),
+                    dims_str
+                )
+            }
             _ => unimplemented!(),
         }
     }
@@ -506,8 +521,8 @@ impl DafnyPrinter {
     fn print_lhs(lhs: &Lhs) -> String {
         match lhs {
             Lhs::Identifier(name, _) => name.clone(),
-            Lhs::MemberAccess(object, field) => format!("{}.{}", Self::print_expr(object), field),
-            Lhs::Index(array, index) => {
+            Lhs::MemberAccess(object, field, _) => format!("{}.{}", Self::print_expr(object), field),
+            Lhs::Index(array, index, ty) => {
                 format!("{}[{}]", Self::print_expr(array), Self::print_expr(index))
             }
         }
