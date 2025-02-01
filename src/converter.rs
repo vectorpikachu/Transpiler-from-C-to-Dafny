@@ -112,6 +112,7 @@ fn parse_type(node: &Node, context: &mut Context, source: &str) -> Option<Type> 
                 "unsigned short" => Some(Type::Bv(16)),
                 "unsigned long long" => Some(Type::Bv(64)),
                 "float" => Some(Type::Real), // 处理 float 类型, float 的溢出也是一个 UB.
+                "int*" => Some(Type::Array(Box::new(Type::Int))),
                 _ => {
                     // 处理其他类型
                     None
@@ -195,6 +196,25 @@ fn parse_function(node: &Node, context: &mut Context, source: &str) -> Option<Me
     } else {
         Expr::Primary(PrimaryExpr::Literal(Literal::Boolean(true)), Type::Bool)
     };
+
+    let mut modify_array_params_exprs = match func_params.clone() {
+        Some(params) => {
+            let mut exprs = vec![];
+            for param in params {
+                if !param.type_.is_array() {
+                    continue;
+                }
+                exprs.push(Expr::Primary(
+                    PrimaryExpr::Identifier(param.id.clone()),
+                    Type::Array(Box::new(Type::Int)),
+                ));
+            }
+            exprs
+        }
+        None => vec![],
+    };
+    modify_array_params_exprs.push(modify_expr);
+
     let method_decl = MethodDecl {
         id: func_name.unwrap(),
         params: func_params,
@@ -202,7 +222,7 @@ fn parse_function(node: &Node, context: &mut Context, source: &str) -> Option<Me
         return_type: func_type,
         requires: vec![requires_expr],
         ensures: vec![],
-        modifies: vec![modify_expr],
+        modifies: modify_array_params_exprs,
         decreases: vec![decrease_expr],
         block: Block { stmts },
     };
@@ -238,9 +258,13 @@ fn parse_func_params(node: &Node, context: &mut Context, source: &str) -> Option
                 // TODO: Parse array parameters
                 // 这里的可以有 array_declarator
                 let param_type = param.child_by_field_name("type")?;
-                let param_type = parse_type(&param_type, context, source)?;
-                let param_name = param.child_by_field_name("declarator")?;
-                let param_name = param_name.utf8_text(source.as_bytes());
+                let mut param_type = parse_type(&param_type, context, source)?;
+                let param_decl = param.child_by_field_name("declarator")?;
+                let mut param_name = param_decl.utf8_text(source.as_bytes());
+                if param_decl.kind() == "pointer_declarator" {
+                    param_name = param_decl.child_by_field_name("declarator")?.utf8_text(source.as_bytes());
+                    param_type = Type::Array(Box::new(param_type.clone()));
+                }
                 match param_name {
                     Ok(name) => {
                         context.declare_var(name.to_string(), param_type.clone());
@@ -1349,6 +1373,7 @@ fn parse_subscript_expr(node: &Node, context: &mut Context, source: &str) -> Opt
         return None;
     }
     let index = index.unwrap();
+    println!("\n→ context: {:?}", context);
     let ty = context.lookup_var(name).unwrap().clone();
     let base_ty = ty.get_base_type();
 

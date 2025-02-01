@@ -5,7 +5,9 @@ mod context;
 mod printer;
 mod preprocess;
 
+use clap::ArgAction;
 use context::Context;
+use preprocess::delete_decreases_star;
 use preprocess::extract_assertion;
 use tree_sitter::Parser;
 use tree_sitter_c::LANGUAGE;
@@ -20,9 +22,9 @@ use crate::printer::*;
 
 fn main() -> Result<()> {
 
-    let matches = Command::new("C-parser")
+    let matches = Command::new("CParser")
         .version("0.1.0")
-        .about("Parses a C file using tree-sitter and outputs the syntax tree")
+        .about("Parses a C file using tree-sitter and translates it to Dafny")
         .arg(
             Arg::new("input")
                 .short('i')
@@ -39,11 +41,25 @@ fn main() -> Result<()> {
                 .help("Sets the output file")
                 .required(true),
         )
+        .arg(
+          Arg::new("termination")
+          .short('t')
+          .long("termination")
+          .value_name("BOOL")
+          .help("Check termination of the program")
+          .required(true)
+        )
         .get_matches();
 
     let input_file: &String = matches.get_one("input").expect("input file not specified");
     let output_file: &String = matches.get_one("output").expect("output file not specified");
 
+    let termination = matches
+      .get_one::<String>("termination")
+      .expect("termination not specified")
+      .parse::<bool>()
+      .expect("termination not a bool");
+    
     let c_code = fs::read_to_string(input_file).expect("Error reading input file");
     let c_code = extract_assertion(&c_code);
 
@@ -80,7 +96,15 @@ function to_bv32(n: int): bv32
 
 ";
 
-    let dafny_code = DafnyPrinter::print_program(&program);
+    let mut dafny_code = DafnyPrinter::print_program(&program);
+
+    if termination.clone() {
+      println!("Checking termination of the program. ☺");
+      dafny_code = delete_decreases_star(&dafny_code);
+    } else {
+      println!("Not checking termination of the program. 😆");
+    }
+
     println!("{}{}", predef, dafny_code);
     write!(output, "{}{}", predef, dafny_code)?;
 

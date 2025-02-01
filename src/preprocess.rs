@@ -11,3 +11,10 @@ pub fn extract_assertion(input: &str) -> String {
     let current_str = re_false.replace_all(&current_str, "false").to_string();
     current_str
 }
+
+/// delete the `decreases *` in the str
+pub fn delete_decreases_star(input: &str) -> String {
+    let re_decreases = Regex::new(r"(?m)^(\s)*decreases \*(\n|\r|\r\n)*").unwrap();
+    let current_str = re_decreases.replace_all(input, "").to_string();
+    current_str
+}
