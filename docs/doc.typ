@@ -36,7 +36,7 @@
 #block(text(size: 14pt, author))
 #block(text(size: 12pt, date))])
 
-#align(center, image("../assets/Transpiler-from-C-to-Dafny.svg", width: 80%))
+#align(center, image("./assets/Transpiler-from-C-to-Dafny.svg", width: 80%))
 
 #outline(
   title: "Contents",

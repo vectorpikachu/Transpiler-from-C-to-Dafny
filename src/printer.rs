@@ -163,7 +163,7 @@ impl DafnyPrinter {
             result.push_str(&format!(
                 "{}var {}: {}\n",
                 Self::indent(indent_level + 1),
-                field.id,
+                Self::print_name(&field.id),
                 Self::print_type(&field.type_)
             ));
         }
@@ -366,7 +366,7 @@ impl DafnyPrinter {
     fn print_primary_expr(primary: &PrimaryExpr) -> String {
         match primary {
             PrimaryExpr::Literal(literal) => Self::print_literal(literal),
-            PrimaryExpr::Identifier(name) => name.clone(),
+            PrimaryExpr::Identifier(name) => Self::print_name(name),
             PrimaryExpr::Index(expr, id) => {
                 format!("{}[{}]", Self::print_expr(expr), Self::print_expr(id))
             }
@@ -452,14 +452,14 @@ impl DafnyPrinter {
                     if var.init.is_some() {
                         result.push_str(&format!(
                             "var {} : {} := {};",
-                            var.id,
+                            Self::print_name(&var.id),
                             Self::print_type(&var.type_),
                             Self::print_expr(var.init.as_ref().unwrap())
                         ));
                     } else {
                         result.push_str(&format!(
                             "var {} : {} := *;",
-                            var.id,
+                            Self::print_name(&var.id),
                             Self::print_type(&var.type_)
                         ));
                     }
@@ -520,7 +520,7 @@ impl DafnyPrinter {
 
     fn print_lhs(lhs: &Lhs) -> String {
         match lhs {
-            Lhs::Identifier(name, _) => name.clone(),
+            Lhs::Identifier(name, _) => Self::print_name(name),
             Lhs::MemberAccess(object, field, _) => format!("{}.{}", Self::print_expr(object), field),
             Lhs::Index(array, index, ty) => {
                 format!("{}[{}]", Self::print_expr(array), Self::print_expr(index))
@@ -617,7 +617,7 @@ impl DafnyPrinter {
 
     fn print_pattern(pattern: &Pattern) -> String {
         match pattern {
-            Pattern::Identifier(name) => name.clone(),
+            Pattern::Identifier(name) => Self::print_name(name),
             Pattern::Constructor(name, patterns) => {
                 let sub_patterns = patterns
                     .iter()
@@ -640,5 +640,13 @@ impl DafnyPrinter {
 
     fn indent(level: usize) -> String {
         "  ".repeat(level)
+    }
+
+    /// Rule out the keywords in Dafny, while these keywords are not C's keywords, thus can be used in C.
+    fn print_name(name: &str) -> String {
+        if name == "new" || name == "old" || name == "as" {
+            return format!("{}_itXx3w", name);
+        }
+        return name.to_string();
     }
 }

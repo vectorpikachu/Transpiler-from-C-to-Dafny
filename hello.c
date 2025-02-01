@@ -5,6 +5,8 @@ extern int unknown_int(void);
 
 int N;
 
+int old = 0;
+
 int main()
 {
 	N = unknown_int();
@@ -13,6 +15,11 @@ int main()
 	int i;
 	int sum[1];
 	int a[N];
+	int new = 0;
+
+	new += 1;
+
+	new = old;
 
 	/* Loop_A */  for(i=0; i<N; i++)
 	{

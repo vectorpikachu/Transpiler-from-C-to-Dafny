@@ -10,8 +10,10 @@ function to_bv32(n: int): bv32
 
 class CProgram {
   var N: int
+  var old_itXx3w: int
   constructor(){
     N := 0;
+    old_itXx3w := 0;
   }
   method main() returns (ret: int)
     requires true
@@ -25,33 +27,24 @@ class CProgram {
     var i : int := *;
     var sum := new int[1];
     var a := new int[N];
-    assert a.Length == N;
+    var new_itXx3w : int := 0;
+    new_itXx3w := (new_itXx3w + 1);
+    new_itXx3w := old_itXx3w;
     i := 0;
     while (i < N) 
       decreases *
-      invariant 0 <= i <= N
-      invariant a.Length == N
-      invariant forall k : int :: 0 <= k < i ==> a[k] <= 1
     {
-      assert 0 <= i < N;
       if ((i % 1) == 0) {
-        assert 0 <= i < N;
         a[i] := 1;
-        assert a[i] <= 1;
       } else {
         a[i] := 0;
-        assert a[i] <= 1;
       }
       i := (i + 1);
     }
     i := 0;
-    assert forall k : int :: 0 <= k < N ==> a[k] <= 1;
     while (i < N) 
       decreases *
-      invariant 0 <= i <= N
-      invariant a.Length == N
     {
-      
       if (i == 0) {
         sum[0] := 0;
       } else {
