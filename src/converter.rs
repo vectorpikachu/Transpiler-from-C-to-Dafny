@@ -104,6 +104,7 @@ fn parse_type(node: &Node, context: &mut Context, source: &str) -> Option<Type> 
             let ty_name = ty_name.trim();
             match ty_name {
                 "int" => Some(Type::Int),
+                "long long" => Some(Type::Int),
                 "unsigned int" => Some(Type::Bv(32)),
                 "unsigned char" => Some(Type::Bv(8)),
                 "_Bool" => Some(Type::Bool), // 处理 _Bool 类型
@@ -263,9 +264,8 @@ fn parse_func_params(node: &Node, context: &mut Context, source: &str) -> Option
 
 fn parse_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
     let mut stmts = vec![];
-
     let stmt = match node.kind() {
-        "return_statement" => vec![parse_return(node, context, source).unwrap()],
+        "return_statement" => parse_return(node, context, source).unwrap(),
         "declaration" => parse_declaration(node, context, source).unwrap(),
         "expression_statement" => {
             // 包含了函数调用 / 变量赋值 等
@@ -399,8 +399,9 @@ fn generate_constructor(vars: &Vec<FieldDecl>, context: &Context, source: &str) 
     }
 }
 
-fn parse_return(node: &Node, context: &mut Context, source: &str) -> Option<Stmt> {
+fn parse_return(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
     let mut ret_expr = None;
+    let mut stmts = vec![];
     for child_node in node.children(&mut node.walk()) {
         match child_node.kind() {
             "identifier" => {
@@ -418,14 +419,27 @@ fn parse_return(node: &Node, context: &mut Context, source: &str) -> Option<Stmt
             _ => {
                 // Expressions
                 ret_expr = parse_expr(&child_node, context, source);
+                if child_node.kind() == "call_expression" {
+                    let assgn_stmt = Stmt::Assign(Assign {
+                        lhs: Lhs::Identifier("ret".to_string(), Type::Int),
+                        expr: ret_expr.clone().unwrap(),
+                    });
+                    stmts.push(assgn_stmt);
+                    ret_expr = Some(Expr::Primary(
+                        PrimaryExpr::Identifier("ret".to_string()),
+                        Type::Int,
+                    ));
+                }
             }
         }
     }
-    Some(Stmt::Return(ret_expr))
+    stmts.push(Stmt::Return(ret_expr));
+    Some(stmts)
 }
 
 fn parse_declaration(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
     let mut stmts = vec![];
+    println!("我们的declaration: {:?}", node.utf8_text(source.as_bytes()));
     for decl in node.children_by_field_name("declarator", &mut node.walk()) {
         if decl.kind() == "function_declarator" {
             continue;
@@ -876,9 +890,10 @@ fn parse_for_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Ve
             continue;
         }
         if counter == 0 {
+            println!("child0: {:?}", child.utf8_text(source.as_bytes()));
             let stmt = if child.kind() == "declaration" {
                 counter += 1;
-                parse_stmt(node, context, source)
+                parse_stmt(&child, context, source)
             } else {
                 parse_expr_stmt(&child, context, source)
             };
@@ -903,6 +918,7 @@ fn parse_for_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Ve
                 update_stmt.extend(stmt.unwrap());
             }
         } else if counter == 3 {
+            println!("child3: {:?}", child.utf8_text(source.as_bytes()));
             let stmt = parse_stmt(&child, context, source);
             if stmt.is_some() {
                 body.extend(stmt.unwrap());
@@ -1292,8 +1308,20 @@ fn parse_call_expr(node: &Node, context: &mut Context, source: &str) -> Option<E
     if func_name == "assume" {
         return None;
     }
+    println!("☣ The context is ☣: {:?}", context);
     let func_ty = context.lookup_var(func_name);
-    let func_ty = context.lookup_var(func_name).unwrap().clone();
+    let func_ty = if func_ty.is_none() {
+        let func = context.get_current_method().unwrap();
+        let params_type = if func.params.is_some() {
+            func.params.as_ref().unwrap().iter().map(|param| param.type_.clone()).collect()
+        } else {
+            vec![]
+        };
+        let return_type = func.return_type.clone();
+        Type::Function(params_type, Box::new(return_type))
+    } else {
+        func_ty.unwrap().clone()
+    };
 
     let ret_ty = match func_ty.clone() {
         Type::Function(_, ret_ty) => *ret_ty,

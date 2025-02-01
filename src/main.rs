@@ -84,6 +84,6 @@ function to_bv32(n: int): bv32
     println!("{}{}", predef, dafny_code);
     write!(output, "{}{}", predef, dafny_code)?;
 
-    println!("Hello, world!");
+    println!("Conversion finished! 😀");
     Ok(())
 }

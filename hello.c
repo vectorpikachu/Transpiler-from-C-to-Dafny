@@ -1,46 +1,10 @@
-// Source: data/benchmarks/diffy_cav21_bench/brs1.c
+// Source: data/benchmarks/tpdb/C/SV-COMP_Termination_Category/genady_true-termination.c
 #include <stdlib.h>
 #define assume(e) if(!(e)) exit(-1);
-extern int unknown_int(void);
 
-int N;
-
-int old = 0;
-
-int main()
-{
-	N = unknown_int();
-	if(N <= 0) return 1;
-
-	int i;
-	int sum[1];
-	int a[N];
-	int new = 0;
-
-	new += 1;
-
-	new = old;
-
-	/* Loop_A */  for(i=0; i<N; i++)
-	{
-		if(i%1==0) {
-			a[i] = 1;
-		} else {
-			a[i] = 0;
-		}
-	}
-
-	/* Loop_B */  for(i=0; i<N; i++)
-	{
-		if(i==0) {
-			sum[0] = 0;
-		} else {
-			sum[0] = sum[0] + a[i];
-		}
-	}
-	{;
-//@ assert(sum[0] <= N);
-}
-
-	return 1;
+int main() {
+   int j = 1;
+   for (int i = 10000; i-j >= 1; i--) {
+     j++;
+   }  
 }
