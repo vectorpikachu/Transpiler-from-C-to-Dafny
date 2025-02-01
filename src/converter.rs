@@ -104,6 +104,8 @@ fn parse_type(node: &Node, context: &mut Context, source: &str) -> Option<Type> 
             let ty_name = ty_name.trim();
             match ty_name {
                 "int" => Some(Type::Int),
+                "long" => Some(Type::Int),
+                "char" => Some(Type::Int),
                 "long long" => Some(Type::Int),
                 "unsigned int" => Some(Type::Bv(32)),
                 "unsigned char" => Some(Type::Bv(8)),
@@ -113,6 +115,7 @@ fn parse_type(node: &Node, context: &mut Context, source: &str) -> Option<Type> 
                 "unsigned long long" => Some(Type::Bv(64)),
                 "float" => Some(Type::Real), // 处理 float 类型, float 的溢出也是一个 UB.
                 "int*" => Some(Type::Array(Box::new(Type::Int))),
+                "unsigned short int" => Some(Type::Bv(16)),
                 _ => {
                     // 处理其他类型
                     None
@@ -463,7 +466,6 @@ fn parse_return(node: &Node, context: &mut Context, source: &str) -> Option<Vec<
 
 fn parse_declaration(node: &Node, context: &mut Context, source: &str) -> Option<Vec<Stmt>> {
     let mut stmts = vec![];
-    println!("我们的declaration: {:?}", node.utf8_text(source.as_bytes()));
     for decl in node.children_by_field_name("declarator", &mut node.walk()) {
         if decl.kind() == "function_declarator" {
             continue;
@@ -491,12 +493,10 @@ fn parse_declaration(node: &Node, context: &mut Context, source: &str) -> Option
                     stmts.extend(stmt.clone().unwrap());
                 }
                 let array_id = stmt.unwrap()[0].get_decl_id();
-                println!("初始化列表为{:?}", init_value);
                 let init_stmts = parse_init_list(&init_value, context, source, &array_id);
                 if init_stmts.is_some() {
                     stmts.extend(init_stmts.unwrap());
                 }
-                println!("初始化列表为{:?}", stmts);
 
                 return Some(stmts);
             }
@@ -508,8 +508,10 @@ fn parse_declaration(node: &Node, context: &mut Context, source: &str) -> Option
 
         match name {
             Ok(name) => {
+                println!("Declaring variable: {} with ty {:?}", name, node.child_by_field_name("type"));
                 let ty = node.child_by_field_name("type")?;
                 let dafny_ty = parse_type(&ty, context, source)?;
+                println!("Declaring variable: {} with ty {:?}", name, dafny_ty);
                 context.declare_var(name.to_string(), dafny_ty.clone());
                 stmts.push(Stmt::DeclVar(Var {
                     id: name.to_string(),
@@ -547,9 +549,7 @@ fn parse_array_decl(node: &Node, context: &mut Context, source: &str, base: &Typ
         if child.kind() == "[" || child.kind() == "]" {
             continue;
         }
-        println!("我们的数组大小是{:?}", child);
         let dim = parse_expr(&child, context, source);
-        println!("我们的数组大小是{:?}", dim);
         if dim.is_some() {
             dims.push(dim.unwrap());
         }
@@ -577,7 +577,6 @@ fn parse_init_list(node: &Node, context: &mut Context, source: &str, array_id: &
         if child.kind() == "{" || child.kind() == "}" || child.kind() == "," {
             continue;
         }
-        println!("我们的{:?}", child);
         let expr = parse_expr(&child, context, source);
         if expr.is_some() {
             // TODO: Parse init list
@@ -653,11 +652,8 @@ fn parse_lhs(node: &Node, context: &mut Context, source: &str) -> Option<Lhs> {
                 .unwrap()
                 .utf8_text(source.as_bytes())
                 .expect("Failed to get identifier name");
-            println!("我们的id_name: {:?}", id_name);
             let var_ty = context.lookup_var(&id_name).unwrap().clone();
-            println!("我们的var_ty: {:?}", var_ty);
             let index = parse_expr(&node.child(2).unwrap(), context, source);
-            println!("我们的index: {:?}", index);
             if index.is_some() {
                 Some(Lhs::Index(
                     Box::new(Expr::Primary(PrimaryExpr::Identifier(id_name.to_string()), var_ty.clone())),
@@ -674,7 +670,6 @@ fn parse_lhs(node: &Node, context: &mut Context, source: &str) -> Option<Lhs> {
 
 fn parse_assign_statement(node: &Node, context: &mut Context, source: &str) -> Option<Stmt> {
     let lhs = node.child(0).unwrap();
-    println!("我们的lhs: {:?}", lhs);
     let lhs_expr = parse_expr(&lhs, context, source);
     let lhs = parse_lhs(&lhs, context, source);
     if lhs.is_none() {
@@ -898,7 +893,6 @@ fn parse_for_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Ve
     let mut update_stmt = vec![];
     let mut body = vec![];
 
-    println!("我们的for_stmt: {:?}", node.utf8_text(source.as_bytes()));
 
     let mut counter = 0;
     for child in node.children(&mut node.walk()) {
@@ -914,20 +908,17 @@ fn parse_for_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Ve
             continue;
         }
         if counter == 0 {
-            println!("child0: {:?}", child.utf8_text(source.as_bytes()));
             let stmt = if child.kind() == "declaration" {
                 counter += 1;
                 parse_stmt(&child, context, source)
             } else {
                 parse_expr_stmt(&child, context, source)
             };
-            println!("我们的init_stmt: {:?}", stmt);
             if stmt.is_some() {
                 init_stmt.extend(stmt.unwrap());
             }
         } else if counter == 1 {
             let cond_exp = parse_expr(&child, context, source);
-            println!("我们的cond_exp: {:?}", cond_exp);
             if cond_exp.is_none() {
                 cond.push(Expr::Primary(
                     PrimaryExpr::Literal(Literal::Boolean(true)),
@@ -942,7 +933,6 @@ fn parse_for_stmt(node: &Node, context: &mut Context, source: &str) -> Option<Ve
                 update_stmt.extend(stmt.unwrap());
             }
         } else if counter == 3 {
-            println!("child3: {:?}", child.utf8_text(source.as_bytes()));
             let stmt = parse_stmt(&child, context, source);
             if stmt.is_some() {
                 body.extend(stmt.unwrap());
@@ -1169,6 +1159,12 @@ fn parse_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> 
         "subscript_expression" => {
             parse_subscript_expr(node, context, source)
         }
+        "sizeof_expression" => {
+            parse_sizeof_expr(node, context, source)
+        }
+        "cast_expression" => {
+            parse_cast_expr(node, context, source)
+        }
         "initializer_list" => {
             // TODO: Parse initializer list
             unimplemented!()
@@ -1321,6 +1317,7 @@ fn parse_call_expr(node: &Node, context: &mut Context, source: &str) -> Option<E
         || func_name == "unknown_uint"
         || func_name == "unknown_bool" 
         || func_name == "unknown_uchar"
+        || func_name == "unknown_char"
         || func_name == "unknown1"
         || func_name == "unknown2"
         || func_name == "unknown3"
@@ -1332,7 +1329,6 @@ fn parse_call_expr(node: &Node, context: &mut Context, source: &str) -> Option<E
     if func_name == "assume" {
         return None;
     }
-    println!("☣ The context is ☣: {:?}", context);
     let func_ty = context.lookup_var(func_name);
     let func_ty = if func_ty.is_none() {
         let func = context.get_current_method().unwrap();
@@ -1373,9 +1369,43 @@ fn parse_subscript_expr(node: &Node, context: &mut Context, source: &str) -> Opt
         return None;
     }
     let index = index.unwrap();
-    println!("\n→ context: {:?}", context);
     let ty = context.lookup_var(name).unwrap().clone();
     let base_ty = ty.get_base_type();
 
     Some(Expr::Primary(PrimaryExpr::Index(Box::new(Expr::Primary(PrimaryExpr::Identifier(name.to_string()), ty)), Box::new(index)), base_ty))
+}
+
+fn parse_sizeof_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> {
+    let ty = node.child(1).unwrap();
+    let ty_sz = match ty.kind() {
+        "int" => 4,
+        "char" => 1,
+        "short" => 2,
+        "float" => 4,
+        "double" => 8,
+        "long" => 8,
+        "long long" => 8,
+        "unsigned char" => 1,
+        "unsigned short" => 2,
+        "unsigned int" => 4,
+        "unsigned long" => 8,
+        "unsigned long long" => 8,
+        _ => 4,
+    };
+    Some(Expr::Primary(PrimaryExpr::Literal(Literal::Integer(ty_sz.to_string())), Type::Int))
+}
+
+fn parse_cast_expr(node: &Node, context: &mut Context, source: &str) -> Option<Expr> {
+    let ty = node.child(1).unwrap();
+    let ty = parse_type(&ty, context, source);
+    if ty.is_none() {
+        return None;
+    }
+    let ty = ty.unwrap();
+    let expr = parse_expr(&node.child(3).unwrap(), context, source);
+    if expr.is_none() {
+        return None;
+    }
+    let expr = expr.unwrap();
+    Some(Expr::Cast(Box::new(expr), ty))
 }

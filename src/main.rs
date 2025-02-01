@@ -5,7 +5,6 @@ mod context;
 mod printer;
 mod preprocess;
 
-use clap::ArgAction;
 use context::Context;
 use preprocess::delete_decreases_star;
 use preprocess::extract_assertion;

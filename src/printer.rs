@@ -345,7 +345,6 @@ impl DafnyPrinter {
                 )
             }
             Expr::ArrayInit(dims, base_ty, ty) => {
-                println!("当前的dims: {:?}", dims);
                 let mut dims_str = String::new();
                 for dim in dims {
                     dims_str += &Self::print_expr(dim);
@@ -358,6 +357,18 @@ impl DafnyPrinter {
                     Self::print_type(base_ty),
                     dims_str
                 )
+            }
+            Expr::Cast(expr, ty) => {
+                if expr.get_type() == ty.clone() {
+                    return Self::print_expr(expr);
+                }
+                if ty.clone() == Type::Bool {
+                    return format!("{} != 0", Self::print_expr(expr));
+                }
+                if expr.get_type() == Type::Bool {
+                    return format!("if {} then 1 else 0", Self::print_expr(expr));
+                }
+                format!("{} as {}", Self::print_expr(expr), Self::print_type(ty))
             }
             _ => unimplemented!(),
         }

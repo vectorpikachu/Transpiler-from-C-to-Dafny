@@ -179,6 +179,7 @@ pub enum Expr {
     Exists(Quantifier, Box<Expr>, Type),
     IfThenElse(Box<Expr>, Box<Expr>, Box<Expr>, Type),
     ArrayInit(Vec<Expr>, Type, Type), // first is base type, second is the whole type
+    Cast(Box<Expr>, Type),
 }
 
 impl Expr {
@@ -200,6 +201,7 @@ impl Expr {
             Expr::Exists(_, _, ty) => ty.clone(),
             Expr::IfThenElse(_, _, _, ty) => ty.clone(),
             Expr::ArrayInit(_, _, ty) => ty.clone(),
+            Expr::Cast(_, ty) => ty.clone(),
         }
     }
 
