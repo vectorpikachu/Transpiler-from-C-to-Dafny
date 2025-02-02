@@ -254,6 +254,9 @@ impl DafnyPrinter {
         let rhs_ty = rhs.get_type();
         let target_ty = max_ty(lhs_ty.clone(), rhs_ty.clone());
         let mut lhs_str = Self::print_expr(lhs);
+        if lhs_ty == Type::Star || rhs_ty == Type::Star {
+            return "*".to_string();
+        }
         if lhs_ty != target_ty && target_ty != Type::Number {
             lhs_str.push_str(&format!(" as {}", Self::print_type(&target_ty)));
         }
@@ -657,6 +660,10 @@ impl DafnyPrinter {
     fn print_name(name: &str) -> String {
         if name == "new" || name == "old" || name == "as" {
             return format!("{}_itXx3w", name);
+        }
+        if name.starts_with("_") {
+            // 下划线开头在 Dafny 中是不允许的
+            return format!("underscore{}", name);
         }
         return name.to_string();
     }
