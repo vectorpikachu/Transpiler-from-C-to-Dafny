@@ -4,8 +4,10 @@ mod dafny_ast;
 mod context;
 mod printer;
 mod preprocess;
+mod llm_checker;
 
 use context::Context;
+use llm_checker::fix_code_with_python;
 use preprocess::delete_decreases_star;
 use preprocess::extract_assertion;
 use tree_sitter::Parser;
@@ -46,6 +48,14 @@ fn main() -> Result<()> {
           .long("termination")
           .value_name("BOOL")
           .help("Check termination of the program")
+          .required(true)
+        )
+        .arg(
+          Arg::new("llm")
+          .short('l')
+          .long("llm")
+          .value_name("BOOL")
+          .help("Check syntax error of the program with llm")
           .required(true)
         )
         .get_matches();
@@ -106,6 +116,19 @@ function to_bv32(n: int): bv32
 
     println!("{}{}", predef, dafny_code);
     write!(output, "{}{}", predef, dafny_code)?;
+
+    let llm = matches
+      .get_one::<String>("llm")
+      .expect("llm not specified")
+      .parse::<bool>()
+      .expect("llm not a bool");
+    if llm {
+      // fix code with python
+      fix_code_with_python(output_file);
+      let output_code = fs::read_to_string(output_file).expect("Error reading output file");
+      println!("{}", output_code);
+    }
+    
 
     println!("Conversion finished! 😀");
     Ok(())

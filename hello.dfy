@@ -19,6 +19,8 @@ class CProgram {
     var c1 : bv8 := *;
     var c2 : int := *;
     var ac : bv8 := *;
+    if ((* - 3) >= 5) {
+    }
     ac := c1;
     while (ac != c2 as bv8) 
       decreases *
