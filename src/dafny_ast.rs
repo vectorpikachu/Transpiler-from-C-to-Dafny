@@ -281,6 +281,7 @@ pub enum Stmt {
     Continue,
     Assume(Expr),
     Call(Call),
+    GhostDeclVar(Var),
 }
 
 impl Stmt {

@@ -479,6 +479,14 @@ impl DafnyPrinter {
                     }
                 }
             }
+            Stmt::GhostDeclVar(var) => {
+                result.push_str(&format!(
+                    "ghost var {} : {} := {};",
+                    Self::print_name(&format!("ghost_{}", var.id)),
+                    Self::print_type(&var.type_),
+                    Self::print_name(&var.id)
+                ));
+            }
             Stmt::Break => {
                 result.push_str("break;");
             }

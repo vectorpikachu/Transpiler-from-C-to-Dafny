@@ -515,8 +515,8 @@ fn parse_declaration(node: &Node, context: &mut Context, source: &str) -> Option
                 context.declare_var(name.to_string(), dafny_ty.clone());
                 stmts.push(Stmt::DeclVar(Var {
                     id: name.to_string(),
-                    type_: dafny_ty,
-                    init: init,
+                    type_: dafny_ty.clone(),
+                    init: init.clone(),
                 }));
             }
             Err(e) => {
