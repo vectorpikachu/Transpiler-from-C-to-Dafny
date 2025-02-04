@@ -253,6 +253,7 @@ impl DafnyPrinter {
         let lhs_ty = lhs.get_type();
         let rhs_ty = rhs.get_type();
         let target_ty = max_ty(lhs_ty.clone(), rhs_ty.clone());
+        println!("lhs: {:?},\nrhs: {:?},\ntarget_ty: {:?}", lhs, rhs, target_ty);
         let mut lhs_str = Self::print_expr(lhs);
         if lhs_ty == Type::Star || rhs_ty == Type::Star {
             return "*".to_string();

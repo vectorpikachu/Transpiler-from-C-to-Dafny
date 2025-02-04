@@ -93,17 +93,7 @@ fn main() -> Result<()> {
     let mut context = Context::new();
     let program = convert(tree, &mut context, &c_code);
 
-    let predef = r"
-function to_bv32(n: int): bv32
-  requires -0x80000000 <= n < 0x80000000
-{
-  if n >= 0 then
-    n as bv32
-  else
-    (n + 0x100000000) as bv32  // 转换为补码形式
-}
-
-";
+    let predef = r"";
 
     let mut dafny_code = DafnyPrinter::print_program(&program);
 

@@ -1,13 +1,3 @@
-
-function to_bv32(n: int): bv32
-  requires -0x80000000 <= n < 0x80000000
-{
-  if n >= 0 then
-    n as bv32
-  else
-    (n + 0x100000000) as bv32  // 转换为补码形式
-}
-
 class CProgram {
   constructor(){
   }
