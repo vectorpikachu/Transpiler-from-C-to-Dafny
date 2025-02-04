@@ -19,7 +19,8 @@ class CProgram {
     var c1 : bv8 := *;
     var c2 : int := *;
     var ac : bv8 := *;
-    if ((* - 3) >= 5) {
+    if * {
+      assume {:axiom} (c1 as int != c2);
     }
     ac := c1;
     while (ac != c2 as bv8) 

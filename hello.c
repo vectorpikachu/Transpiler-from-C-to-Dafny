@@ -10,7 +10,7 @@ int main()
 	char c2 =  unknown_char();
 	unsigned char ac;
 	if (unknown_char() + 2 - 3 >= 5) {
-
+		assume(c1 != c2);
 	}
 	for( ac = (unsigned char)c1 ; ac != (unsigned char)c2 ; ac++ )
 	{

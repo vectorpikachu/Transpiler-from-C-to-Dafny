@@ -1,4 +1,4 @@
-use std::cmp::max;
+use std::{cmp::max, fmt::{Display, Formatter}};
 
 use tree_sitter::ffi::TSSymbolType;
 
@@ -218,6 +218,30 @@ impl Expr {
             _ => panic!("not an array init expression"),
         }
     }
+
+    pub fn contains_star(&self) -> bool {
+        match self {
+            Expr::Primary(PrimaryExpr::Literal(Literal::Star), _) => true,
+            Expr::Primary(_, _) => false,
+            Expr::Additive(_, lhs, rhs, _) => lhs.contains_star() || rhs.contains_star(),
+            Expr::Mult(_, lhs, rhs, _) => lhs.contains_star() || rhs.contains_star(),
+            Expr::Unary(_, expr, _) => expr.contains_star(),
+            Expr::IfThenElse(cond, then, else_, _) => cond.contains_star() || then.contains_star() || else_.contains_star(),
+            Expr::Forall(quant, expr, _) => quant.condition.as_ref().map(|cond| cond.contains_star()).unwrap_or(false) || expr.contains_star(),
+            Expr::Exists(quant, expr, _) => quant.condition.as_ref().map(|cond| cond.contains_star()).unwrap_or(false) || expr.contains_star(),
+            Expr::ArrayInit(_, _, _) => false,
+            Expr::Comparison(_, lhs, rhs, _) => lhs.contains_star() || rhs.contains_star(),
+            Expr::BitwiseOr(lhs, rhs, _) => lhs.contains_star() || rhs.contains_star(),
+            Expr::BitwiseXor(lhs, rhs, _) => lhs.contains_star() || rhs.contains_star(),
+            Expr::Equality(_, lhs, rhs, _) => lhs.contains_star() || rhs.contains_star(),
+            Expr::BitwiseAnd(lhs, rhs, _) => lhs.contains_star() || rhs.contains_star(),
+            Expr::Shift(_, lhs, rhs, _) => lhs.contains_star() || rhs.contains_star(),
+            Expr::LogicalAnd(lhs, rhs, _) => lhs.contains_star() || rhs.contains_star(),
+            Expr::LogicalOr(lhs, rhs, _) => lhs.contains_star() || rhs.contains_star(),
+            Expr::Cast(expr, _) => expr.contains_star(),
+            _ => false,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -281,7 +305,7 @@ pub enum Stmt {
     Continue,
     Assume(Expr),
     Call(Call),
-    GhostDeclVar(Var),
+    GhostDeclVar(GhostVar),
 }
 
 impl Stmt {
@@ -289,6 +313,17 @@ impl Stmt {
         match self {
             Stmt::DeclVar(var) => var.id.clone(),
             _ => panic!("not a declaration statement"),
+        }
+    }
+
+    
+
+    pub fn get_type(&self) -> Type {
+        match self {
+            Stmt::DeclVar(var) => var.type_.clone(),
+            Stmt::GhostDeclVar(var) => var.type_.clone(),
+            Stmt::Assign(assign) => assign.lhs.get_type(),
+            _ => Type::Int,
         }
     }
 }
@@ -314,6 +349,13 @@ pub struct Var {
 }
 
 #[derive(Debug, Clone)]
+pub struct GhostVar {
+    pub id: String,
+    pub type_: Type,
+    pub real_id: String,
+}
+
+#[derive(Debug, Clone)]
 pub struct Assign {
     pub lhs: Lhs,
     pub expr: Expr,
@@ -325,6 +367,7 @@ pub enum Lhs {
     MemberAccess(Box<Expr>, String, Type),
     Index(Box<Expr>, Box<Expr>, Type),
 }
+
 
 impl Lhs {
     pub fn get_type(&self) -> Type {

@@ -275,6 +275,9 @@ impl DafnyPrinter {
         format!("to_bv32({})", expr_str)
     }
     fn print_expr(expr: &Expr) -> String {
+        if expr.contains_star() {
+            return "*".to_string();
+        }
         match expr {
             Expr::LogicalOr(lhs, rhs, _) => Self::print_logical(lhs, rhs, "||"),
             Expr::LogicalAnd(lhs, rhs, _) => Self::print_logical(lhs, rhs, "&&"),
@@ -482,9 +485,9 @@ impl DafnyPrinter {
             Stmt::GhostDeclVar(var) => {
                 result.push_str(&format!(
                     "ghost var {} : {} := {};",
-                    Self::print_name(&format!("ghost_{}", var.id)),
+                    Self::print_name(&var.id),
                     Self::print_type(&var.type_),
-                    Self::print_name(&var.id)
+                    Self::print_name(&var.real_id)
                 ));
             }
             Stmt::Break => {

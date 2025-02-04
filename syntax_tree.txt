@@ -11,7 +11,7 @@ int main()
 	char c2 =  unknown_char();
 	unsigned char ac;
 	if (unknown_char() + 2 - 3 >= 5) {
-
+		assume(c1 != c2);
 	}
 	for( ac = (unsigned char)c1 ; ac != (unsigned char)c2 ; ac++ )
 	{
@@ -65,7 +65,7 @@ int main()
 	char c2 =  unknown_char();
 	unsigned char ac;
 	if (unknown_char() + 2 - 3 >= 5) {
-
+		assume(c1 != c2);
 	}
 	for( ac = (unsigned char)c1 ; ac != (unsigned char)c2 ; ac++ )
 	{
@@ -84,7 +84,7 @@ int main()
 	char c2 =  unknown_char();
 	unsigned char ac;
 	if (unknown_char() + 2 - 3 >= 5) {
-
+		assume(c1 != c2);
 	}
 	for( ac = (unsigned char)c1 ; ac != (unsigned char)c2 ; ac++ )
 	{
@@ -124,7 +124,7 @@ int main()
         identifier: ac (11:16 - 11:18)
         ;: ; (11:18 - 11:19)
       if_statement: if (unknown_char() + 2 - 3 >= 5) {
-
+		assume(c1 != c2);
 	} (12:2 - 14:3)
         if: if (12:2 - 12:4)
         parenthesized_expression: (unknown_char() + 2 - 3 >= 5) (12:5 - 12:34)
@@ -145,9 +145,20 @@ int main()
             number_literal: 5 (12:32 - 12:33)
           ): ) (12:33 - 12:34)
         compound_statement: {
-
+		assume(c1 != c2);
 	} (12:35 - 14:3)
           {: { (12:35 - 12:36)
+          expression_statement: assume(c1 != c2); (13:3 - 13:20)
+            call_expression: assume(c1 != c2) (13:3 - 13:19)
+              identifier: assume (13:3 - 13:9)
+              argument_list: (c1 != c2) (13:9 - 13:19)
+                (: ( (13:9 - 13:10)
+                binary_expression: c1 != c2 (13:10 - 13:18)
+                  identifier: c1 (13:10 - 13:12)
+                  !=: != (13:13 - 13:15)
+                  identifier: c2 (13:16 - 13:18)
+                ): ) (13:18 - 13:19)
+            ;: ; (13:19 - 13:20)
           }: } (14:2 - 14:3)
       for_statement: for( ac = (unsigned char)c1 ; ac != (unsigned char)c2 ; ac++ )
 	{
